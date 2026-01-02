@@ -20,8 +20,8 @@ const Projects = () => {
     {
       title: 'JJ Optimization',
       description: 'A tool optimized for making the best most optimal jj recipe .',
-      tech: [],
-      link: '',
+      tech: ['React', 'CSS'],
+      link: 'https://jj.seannickerson.com',
       image: null
     }
   ]
