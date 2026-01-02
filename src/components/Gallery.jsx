@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import './Gallery.css'
 
 const imageModules = import.meta.glob('../images/portfolio/*.{jpg,jpeg,png,JPG,JPEG,PNG}', { 
-  eager: true, 
+  eager: false, 
   import: 'default' 
 })
 
@@ -24,19 +24,19 @@ const Gallery = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.05
+        staggerChildren: 0.03
       }
     }
   }
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.6,
-        ease: [0.6, -0.05, 0.01, 0.99]
+        duration: 0.3,
+        ease: [0.25, 0.1, 0.25, 1]
       }
     }
   }
@@ -48,7 +48,7 @@ const Gallery = () => {
         initial={{ opacity: 0, y: -20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: 0.4 }}
       >
         Photography
       </motion.h2>
@@ -75,6 +75,8 @@ const Gallery = () => {
                       alt={`Gallery image ${colIndex * gridColumns.length + index + 1}`}
                       className="gallery-item-image"
                       loading="lazy"
+                      decoding="async"
+                      fetchPriority={index < 4 ? "high" : "low"}
                     />
                   </motion.div>
                 ))}

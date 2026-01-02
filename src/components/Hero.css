@@ -36,6 +36,9 @@
   display: block;
   margin: 0;
   padding: 0;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
 }
 
 .hero-signature-overlay {

@@ -6,15 +6,19 @@ import './Hero.css'
 const Hero = ({ heroImage }) => {
   const heroRef = useRef(null)
   const wrapperRef = useRef(null)
+  // Detect touch device first
+  const isTouchDevice = useRef('ontouchstart' in window || navigator.maxTouchPoints > 0)
+  
   const [animationProgress, setAnimationProgress] = useState(0)
   const [signatureComplete, setSignatureComplete] = useState(false)
-  const [isScrollLocked, setIsScrollLocked] = useState(true)
+  // Don't lock scroll on touch devices - they need normal scrolling
+  const [isScrollLocked, setIsScrollLocked] = useState(!isTouchDevice.current)
   const rafId = useRef(null)
   const targetProgress = useRef(0)
   const currentProgress = useRef(0)
   const hasScrolledPast = useRef(false)
   const isLockingRef = useRef(false)
-  const isLockedRef = useRef(true) // Track locked state immediately with ref (no state delay)
+  const isLockedRef = useRef(!isTouchDevice.current) // Track locked state immediately with ref (no state delay)
   const completionFramesRef = useRef(0) // Track consecutive frames at 1.0
 
   // Smooth interpolation
@@ -92,17 +96,34 @@ const Hero = ({ heroImage }) => {
     }
 
     const handleScroll = () => {
-      // If locked, prevent any scrolling
-      if (isLockedRef.current && window.scrollY > 0) {
+      // On touch devices, allow scrolling to unlock naturally
+      if (isTouchDevice.current && isLockedRef.current) {
+        const scrollY = window.scrollY || window.pageYOffset
+        // If user scrolled down on touch device, unlock immediately
+        if (scrollY > 50) {
+          targetProgress.current = 1
+          currentProgress.current = 1
+          isLockedRef.current = false
+          setIsScrollLocked(false)
+          return
+        }
+      }
+      // If locked, prevent any scrolling (desktop only)
+      if (isLockedRef.current && window.scrollY > 0 && !isTouchDevice.current) {
         window.scrollTo({ top: 0, behavior: 'auto' })
       }
     }
 
-    window.addEventListener('wheel', handleWheel, { passive: false })
-    window.addEventListener('scroll', handleScroll, { passive: false })
+    // Only use wheel handler on non-touch devices
+    if (!isTouchDevice.current) {
+      window.addEventListener('wheel', handleWheel, { passive: false })
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
 
     return () => {
-      window.removeEventListener('wheel', handleWheel)
+      if (!isTouchDevice.current) {
+        window.removeEventListener('wheel', handleWheel)
+      }
       window.removeEventListener('scroll', handleScroll)
     }
   }, [isScrollLocked])
@@ -110,11 +131,12 @@ const Hero = ({ heroImage }) => {
   // Sync scroll lock state with DOM
   useEffect(() => {
     // Only use isScrollLocked state - don't check progress here to avoid conflicts
-    if (isScrollLocked) {
+    if (isScrollLocked && !isTouchDevice.current) {
+      // Only lock scroll on desktop, not touch devices
       window.scrollTo({ top: 0, behavior: 'auto' })
       document.body.style.overflow = 'hidden'
       document.documentElement.style.overflow = 'hidden'
-      // Use fixed positioning to completely prevent scroll
+      // Use fixed positioning to completely prevent scroll (desktop only)
       document.body.style.position = 'fixed'
       document.body.style.width = '100%'
       // Also update ref to match
@@ -277,6 +299,8 @@ const Hero = ({ heroImage }) => {
             src={heroImage || 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=2000'} 
             alt="Hero" 
             className="hero-image"
+            fetchPriority="high"
+            decoding="async"
           />
         </div>
         <div 
