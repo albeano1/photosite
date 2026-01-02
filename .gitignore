@@ -23,6 +23,11 @@ dist-ssr
 *.sln
 *.sw?
 
+# Documentation guides (local only)
+DEPLOYMENT_GUIDE.md
+SIGNATURE_GUIDE.md
+INSPECT_LANDONORRIS.md
+
 
 
 
