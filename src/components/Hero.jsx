@@ -221,9 +221,9 @@ const Hero = ({ heroImage }) => {
     }
   }, [])
 
-  // Handle reverse animation when scrolling up - dynamic and bidirectional
+  // Handle scroll-based animation for touch devices (both directions)
   useEffect(() => {
-    if (isScrollLocked) return
+    if (isScrollLocked && !isTouchDevice.current) return // Skip on desktop when locked (wheel handler handles it)
 
     let lastScrollY = window.scrollY || window.pageYOffset
 
@@ -238,12 +238,22 @@ const Hero = ({ heroImage }) => {
         hasScrolledPast.current = true
       }
 
-      // If at top and scrolling up, lock and reset
+      // For touch devices: map scroll position to animation progress when scrolling down
+      if (isTouchDevice.current && scrollY <= windowHeight && !isScrollLocked) {
+        // Map scroll from 0 to windowHeight to progress 0 to 1
+        const progress = Math.max(0, Math.min(1, scrollY / windowHeight))
+        targetProgress.current = progress
+        return
+      }
+
+      // If at top and scrolling up, lock and reset (desktop only, or touch when past)
       if (scrollY === 0 && scrollingUp && hasScrolledPast.current) {
         targetProgress.current = 0
         currentProgress.current = 0
-        isLockedRef.current = true
-        setIsScrollLocked(true)
+        if (!isTouchDevice.current) {
+          isLockedRef.current = true
+          setIsScrollLocked(true)
+        }
         setSignatureComplete(false)
         hasScrolledPast.current = false
         return
@@ -254,9 +264,9 @@ const Hero = ({ heroImage }) => {
       const reverseStartPoint = windowHeight * 0.2
       const isHeroCentered = scrollY <= reverseStartPoint
 
-      // If scrolling up and hero is centered, lock scroll and allow reverse animation
+      // If scrolling up and hero is centered, lock scroll and allow reverse animation (desktop only)
       // Note: wheel handler will catch this immediately, but this is a backup
-      if (scrollingUp && isHeroCentered && hasScrolledPast.current && !isLockingRef.current && !isLockedRef.current) {
+      if (!isTouchDevice.current && scrollingUp && isHeroCentered && hasScrolledPast.current && !isLockingRef.current && !isLockedRef.current) {
         // Lock immediately using ref (no delay)
         isLockingRef.current = true
         isLockedRef.current = true
