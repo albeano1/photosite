@@ -1,0 +1,64 @@
+.background-words {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0; /* Behind the hero image */
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.background-words-track {
+  display: flex;
+  gap: 4rem;
+  white-space: nowrap;
+  animation: scroll-horizontal 30s linear infinite;
+  will-change: transform;
+}
+
+.background-words-track-reverse {
+  animation: scroll-horizontal-reverse 35s linear infinite;
+}
+
+.background-word {
+  color: rgba(255, 255, 255, 0.04);
+  font-weight: 700;
+  white-space: nowrap;
+  user-select: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: 0.15em;
+  flex-shrink: 0;
+}
+
+@keyframes scroll-horizontal {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes scroll-horizontal-reverse {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .background-word {
+    font-size: 18px !important;
+  }
+  
+  .background-words-track {
+    gap: 2rem;
+  }
+}
+

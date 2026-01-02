@@ -1,0 +1,59 @@
+.hero-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100vh; /* Exactly 100vh - no extra space */
+  margin: 0;
+  padding: 0;
+}
+
+.hero {
+  position: sticky;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: transparent; /* No background - seamless transition */
+  z-index: 1;
+}
+
+.hero-image-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: center center;
+  will-change: transform, filter;
+  z-index: 1;
+}
+
+.hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+.hero-signature-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  pointer-events: none;
+  transition: opacity 0.2s ease-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .hero {
+    height: 100vh;
+  }
+}
+
