@@ -41,6 +41,8 @@
   will-change: transform;
   image-rendering: -webkit-optimize-contrast;
   content-visibility: auto;
+  max-width: 1920px;
+  max-height: 1080px;
 }
 
 .hero-signature-overlay {
@@ -56,9 +58,26 @@
   justify-content: center;
 }
 
+.hero-scroll-indicator {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  color: #ffffff;
+  font-size: 2rem;
+  pointer-events: none;
+  transition: opacity 0.3s ease-out;
+}
+
 @media (max-width: 768px) {
   .hero {
     height: 100vh;
+  }
+
+  .hero-scroll-indicator {
+    bottom: 1.5rem;
+    font-size: 1.5rem;
   }
 }
 

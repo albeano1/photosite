@@ -47,7 +47,7 @@ const Gallery = () => {
                       className="gallery-item-image"
                       loading="lazy"
                       decoding="async"
-                      fetchPriority={index < 4 ? "high" : "low"}
+                      fetchPriority={index < 2 ? "high" : "low"}
                     />
                   </div>
                 ))}

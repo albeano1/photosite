@@ -11,6 +11,7 @@ const Hero = ({ heroImage }) => {
   
   const [animationProgress, setAnimationProgress] = useState(0)
   const [signatureComplete, setSignatureComplete] = useState(false)
+  const [scrollY, setScrollY] = useState(0)
   // Don't lock scroll on touch devices - they need normal scrolling
   const [isScrollLocked, setIsScrollLocked] = useState(!isTouchDevice.current)
   const rafId = useRef(null)
@@ -205,6 +206,21 @@ const Hero = ({ heroImage }) => {
     }
   }, [animationProgress, isScrollLocked])
 
+  // Track scroll position for indicator fade
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY || window.pageYOffset
+      setScrollY(currentScrollY)
+    }
+    
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll() // Initial check
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
+
   // Handle reverse animation when scrolling up - dynamic and bidirectional
   useEffect(() => {
     if (isScrollLocked) return
@@ -283,6 +299,8 @@ const Hero = ({ heroImage }) => {
   const imageSaturation = Math.max(0, 1 - animationProgress)
   // Signature opacity from 0 to 1
   const signatureOpacity = Math.min(1, animationProgress)
+  // Indicator opacity: fade out as user scrolls (starts at scrollY=0, fully hidden at scrollY=200)
+  const indicatorOpacity = Math.max(0, 1 - (scrollY / 200))
 
   return (
     <div ref={wrapperRef} className="hero-wrapper" id="home">
@@ -318,6 +336,12 @@ const Hero = ({ heroImage }) => {
               }
             }}
           />
+        </div>
+        <div 
+          className="hero-scroll-indicator"
+          style={{ opacity: indicatorOpacity }}
+        >
+          ↓
         </div>
       </section>
     </div>
