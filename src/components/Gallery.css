@@ -1,0 +1,138 @@
+.gallery-section {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #0a0a0a;
+  position: relative;
+  padding: 8rem 2rem 4rem;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gallery-title {
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 700;
+  color: #ffffff;
+  text-align: center;
+  margin: 0 0 5rem 0;
+  padding: 0 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: 0.02em;
+  width: 100%;
+}
+
+.gallery-wrapper {
+  background: #2a2a2a;
+  border-radius: 40px;
+  padding: 3rem 2.5rem;
+  position: relative;
+  display: inline-block;
+  width: fit-content;
+  max-width: calc(100% - 4rem);
+}
+
+.gallery-grid-container {
+  width: 100%;
+  position: relative;
+}
+
+.gallery-grid {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.gallery-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.gallery-item {
+  position: relative;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #1a1a1a;
+  contain: layout style paint;
+  will-change: transform;
+}
+
+.gallery-item-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-width: 100%;
+  image-rendering: -webkit-optimize-contrast;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+@media (max-width: 1200px) {
+  .gallery-wrapper {
+    padding: 2.5rem 2rem;
+    border-radius: 35px;
+  }
+
+  .gallery-column {
+    width: 240px;
+    gap: 1.25rem;
+  }
+
+  .gallery-grid {
+    gap: 1.25rem;
+  }
+
+  .gallery-section {
+    padding: 6rem 1.5rem 3rem;
+  }
+
+  .gallery-title {
+    margin-bottom: 4rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .gallery-wrapper {
+    padding: 2rem 1.5rem;
+    border-radius: 30px;
+    max-width: calc(100% - 2rem);
+  }
+
+  .gallery-column {
+    width: calc(50vw - 3rem);
+    min-width: 150px;
+    gap: 1rem;
+  }
+
+  .gallery-grid {
+    gap: 1rem;
+  }
+
+  .gallery-section {
+    padding: 6rem 1rem 3rem;
+  }
+
+  .gallery-title {
+    margin-bottom: 3rem;
+    font-size: clamp(2rem, 10vw, 3rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .gallery-wrapper {
+    padding: 1.5rem 1.25rem;
+    border-radius: 25px;
+  }
+
+  .gallery-grid {
+    flex-direction: column;
+  }
+
+  .gallery-column {
+    width: 100%;
+  }
+}

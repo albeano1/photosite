@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import './Gallery.css'
 
 const imageModules = import.meta.glob('../images/portfolio/*.{jpg,jpeg,png,JPG,JPEG,PNG}', { 
-  eager: false, 
+  eager: true, 
   import: 'default' 
 })
 
@@ -19,28 +19,6 @@ const Gallery = () => {
     return cols.filter(col => col.length > 0)
   }, [])
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.03
-      }
-    }
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.3,
-        ease: [0.25, 0.1, 0.25, 1]
-      }
-    }
-  }
-
   return (
     <section id="gallery" className="gallery-section">
       <motion.h2 
@@ -54,21 +32,14 @@ const Gallery = () => {
       </motion.h2>
       
       <div className="gallery-wrapper">
-        <motion.div 
-          className="gallery-grid-container"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-        >
+        <div className="gallery-grid-container">
           <div className="gallery-grid">
             {gridColumns.map((column, colIndex) => (
               <div key={colIndex} className="gallery-column">
                 {column.map((image, index) => (
-                  <motion.div
+                  <div
                     key={`${colIndex}-${index}`}
                     className="gallery-item"
-                    variants={itemVariants}
                   >
                     <img
                       src={image}
@@ -78,12 +49,12 @@ const Gallery = () => {
                       decoding="async"
                       fetchPriority={index < 4 ? "high" : "low"}
                     />
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   )

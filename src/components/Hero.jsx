@@ -301,6 +301,7 @@ const Hero = ({ heroImage }) => {
             className="hero-image"
             fetchPriority="high"
             decoding="async"
+            loading="eager"
           />
         </div>
         <div 

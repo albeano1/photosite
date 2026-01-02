@@ -39,6 +39,8 @@
   transform: translateZ(0);
   backface-visibility: hidden;
   will-change: transform;
+  image-rendering: -webkit-optimize-contrast;
+  content-visibility: auto;
 }
 
 .hero-signature-overlay {
