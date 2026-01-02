@@ -7,7 +7,7 @@ const Projects = () => {
       title: 'Project Andile',
       description: 'A secrete project with a roatating password, and biometric authentication ',
       tech: ['React', 'Node.js', 'TypeScript'],
-      link: 'https://albeano1.github.io/ven/?access=',
+      link: 'https://venmo.seannickerson.com',
       image: null
     },
     {
