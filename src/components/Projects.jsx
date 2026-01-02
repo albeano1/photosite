@@ -20,7 +20,7 @@ const Projects = () => {
     {
       title: 'JJ Optimization',
       description: 'A tool optimized for making the best most optimal jj recipe .',
-
+      tech: [],
       link: '',
       image: null
     }
@@ -86,7 +86,7 @@ const Projects = () => {
                     </span>
                   ))}
                 </div>
-                {project.link && (
+                {project.link && project.link.trim() !== '' && (
                   <a
                     href={project.link}
                     target="_blank"
