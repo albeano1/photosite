@@ -9,11 +9,21 @@ const imageModules = import.meta.glob('../images/portfolio/*.{jpg,jpeg,png,JPG,J
 
 const images = Object.values(imageModules)
 
+const shuffleArray = (array) => {
+  const shuffled = [...array]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
+
 const Gallery = () => {
   const gridColumns = useMemo(() => {
-    const numColumns = Math.min(4, images.length > 0 ? 4 : 0)
+    const shuffledImages = shuffleArray(images)
+    const numColumns = Math.min(4, shuffledImages.length > 0 ? 4 : 0)
     const cols = Array.from({ length: numColumns }, () => [])
-    images.forEach((image, index) => {
+    shuffledImages.forEach((image, index) => {
       cols[index % numColumns].push(image)
     })
     return cols.filter(col => col.length > 0)

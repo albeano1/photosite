@@ -70,9 +70,6 @@
   height: auto;
   display: block;
   max-width: 100%;
-  max-height: 500px;
-  object-fit: cover;
-  object-position: center;
 }
 
 @media (max-width: 1200px) {
@@ -98,9 +95,6 @@
     margin-bottom: 4rem;
   }
 
-  .gallery-item-image {
-    max-height: 450px;
-  }
 }
 
 @media (max-width: 768px) {
@@ -128,10 +122,6 @@
     margin-bottom: 3rem;
     font-size: clamp(2rem, 10vw, 3rem);
   }
-
-  .gallery-item-image {
-    max-height: 400px;
-  }
 }
 
 @media (max-width: 480px) {
@@ -148,9 +138,5 @@
   .gallery-column {
     width: 100%;
     flex: 1 1 100%;
-  }
-
-  .gallery-item-image {
-    max-height: 350px;
   }
 }
