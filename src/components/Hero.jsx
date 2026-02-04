@@ -3,7 +3,8 @@ import AnimatedSignature from './AnimatedSignature'
 import BackgroundWords from './BackgroundWords'
 import './Hero.css'
 
-const Hero = ({ heroImage }) => {
+const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
+  const useTwoLayers = Boolean(heroBackgroundImage && heroSubjectImage)
   const heroRef = useRef(null)
   const wrapperRef = useRef(null)
   // Detect touch device first
@@ -19,8 +20,11 @@ const Hero = ({ heroImage }) => {
   const currentProgress = useRef(0)
   const hasScrolledPast = useRef(false)
   const isLockingRef = useRef(false)
-  const isLockedRef = useRef(!isTouchDevice.current) // Track locked state immediately with ref (no state delay)
-  const completionFramesRef = useRef(0) // Track consecutive frames at 1.0
+  const isLockedRef = useRef(!isTouchDevice.current)
+  const savedScrollY = useRef(0)
+  const targetMouse = useRef({ x: 0, y: 0 })
+  const currentMouse = useRef({ x: 0, y: 0 })
+  const [mouseTilt, setMouseTilt] = useState({ x: 0, y: 0 })
 
   // Smooth interpolation
   const lerp = (start, end, factor) => {
@@ -37,21 +41,22 @@ const Hero = ({ heroImage }) => {
       const scrollY = window.scrollY || window.pageYOffset
       const windowHeight = window.innerHeight
       const scrollingUp = e.deltaY < 0
-      const scrollSensitivity = 0.005 // Reduced sensitivity for smoother, slower animation
-      const reverseStartPoint = windowHeight * 0.2
+      const scrollSensitivity = 0.005
+      const reverseZone = windowHeight < 700 ? 0.1 : 0.2
+      const reverseStartPoint = windowHeight * reverseZone
 
       // If locked, handle wheel events for animation control (forward or reverse)
       if (isLockedRef.current) {
         const newProgress = targetProgress.current + (e.deltaY * scrollSensitivity)
         
-        // If we've reached 1.0 and are scrolling down, unlock BEFORE clamping for continuous scroll
+        // If we've reached 1.0 and are scrolling down, unlock; let lerp finish so no snap
         if (newProgress >= 1.0 && e.deltaY > 0) {
-          // Unlock immediately - allow scroll to continue in the same motion
           targetProgress.current = 1
+          hasScrolledPast.current = true
           isLockedRef.current = false
+          isLockingRef.current = false
           setIsScrollLocked(false)
-          // Don't prevent default - allow this scroll event to continue scrolling the page
-          return // Let the event bubble to allow page scroll
+          return
         }
         
         // Clamp to 0-1 range
@@ -68,15 +73,9 @@ const Hero = ({ heroImage }) => {
       
       if (scrollingUp && isHeroCentered && hasScrolledPast.current) {
         e.preventDefault()
-        
-        // Immediately lock using ref (no state delay)
         isLockedRef.current = true
-        
-        // Immediately lock scroll (synchronous, no waiting)
         window.scrollTo({ top: 0, behavior: 'auto' })
-        document.body.style.overflow = 'hidden'
-        document.documentElement.style.overflow = 'hidden'
-        
+
         // Map scroll position to progress - hero is centered, so map directly
         // When scrollY is 0, progress is 0 (fullscreen)
         // When scrollY is reverseStartPoint, progress is 1 (50% size)
@@ -129,82 +128,106 @@ const Hero = ({ heroImage }) => {
     }
   }, [isScrollLocked])
 
-  // Sync scroll lock state with DOM
+  // Sync scroll lock state with DOM; preserve scroll position to avoid snap/jump
   useEffect(() => {
-    // Only use isScrollLocked state - don't check progress here to avoid conflicts
     if (isScrollLocked && !isTouchDevice.current) {
-      // Only lock scroll on desktop, not touch devices
-      window.scrollTo({ top: 0, behavior: 'auto' })
+      savedScrollY.current = window.scrollY || window.pageYOffset
+      document.body.style.top = `-${savedScrollY.current}px`
       document.body.style.overflow = 'hidden'
       document.documentElement.style.overflow = 'hidden'
-      // Use fixed positioning to completely prevent scroll (desktop only)
       document.body.style.position = 'fixed'
       document.body.style.width = '100%'
-      // Also update ref to match
+      document.body.style.left = '0'
+      document.body.style.right = '0'
       isLockedRef.current = true
     } else {
+      const restore = savedScrollY.current
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.left = ''
+      document.body.style.right = ''
+      document.body.style.width = ''
       document.body.style.overflow = ''
       document.documentElement.style.overflow = ''
-      document.body.style.position = ''
-      document.body.style.width = ''
       isLockedRef.current = false
+      requestAnimationFrame(() => {
+        window.scrollTo(0, restore)
+      })
     }
   }, [isScrollLocked])
 
-  // Smooth progress update using requestAnimationFrame
-  // Same smooth interpolation for both forward and reverse
+  // Smooth progress: lerp only, no snap threshold (avoids visible jump)
   useEffect(() => {
     const updateProgress = () => {
-      // Clamp targetProgress to 1.0 max to prevent going beyond 50%
-      if (targetProgress.current > 1) {
-        targetProgress.current = 1
-      }
-      
-      // Smooth interpolation - same for both directions
-      const diff = Math.abs(targetProgress.current - currentProgress.current)
-      
-      if (diff > 0.001) {
-        // Smooth factor - balanced for responsiveness without jitter
-        const factor = 0.15
-        currentProgress.current = lerp(currentProgress.current, targetProgress.current, factor)
-        // Clamp to 1.0 max
-        currentProgress.current = Math.min(1, currentProgress.current)
-        setAnimationProgress(currentProgress.current)
+      const target = Math.max(0, Math.min(1, targetProgress.current))
+      targetProgress.current = target
+      const cur = currentProgress.current
+      const diff = target - cur
+      const factor = 0.12
+      if (Math.abs(diff) < 1e-5) {
+        currentProgress.current = target
       } else {
-        currentProgress.current = Math.min(1, targetProgress.current)
-        setAnimationProgress(currentProgress.current)
+        currentProgress.current = Math.max(0, Math.min(1, cur + diff * factor))
       }
-      
+      setAnimationProgress(currentProgress.current)
+
+      const mouseFactor = 0.08
+      currentMouse.current.x = lerp(currentMouse.current.x, targetMouse.current.x, mouseFactor)
+      currentMouse.current.y = lerp(currentMouse.current.y, targetMouse.current.y, mouseFactor)
+      setMouseTilt({ x: currentMouse.current.x, y: currentMouse.current.y })
+
       rafId.current = requestAnimationFrame(updateProgress)
     }
-
     rafId.current = requestAnimationFrame(updateProgress)
-
     return () => {
-      if (rafId.current) {
-        cancelAnimationFrame(rafId.current)
-      }
+      if (rafId.current) cancelAnimationFrame(rafId.current)
     }
   }, [])
 
-  // Unlock scroll when animation completes - ensure it's truly at 50% (progress = 1)
+  // Unlock when target reaches end; don't set current=1 so lerp finishes smoothly (no snap)
   useEffect(() => {
-    // Simplified unlock condition - just check if we're at or very close to 1.0
-    const isAt50Percent = animationProgress >= 0.99 && currentProgress.current >= 0.99 && targetProgress.current >= 0.99
-    
-    // Unlock based on progress alone - unlock immediately when at 1.0
-    if (isAt50Percent && isScrollLocked) {
-      // Unlock immediately - no frame delay for smooth scrolling
+    const targetAtEnd = targetProgress.current >= 0.995
+    if (targetAtEnd && isScrollLocked) {
       targetProgress.current = 1
-      currentProgress.current = 1
-      setAnimationProgress(1)
-      
-      // Unlock immediately - the sync effect will handle DOM cleanup
+      hasScrolledPast.current = true
       isLockedRef.current = false
+      isLockingRef.current = false
       setIsScrollLocked(false)
-      completionFramesRef.current = 0 // Reset for next time
     }
   }, [animationProgress, isScrollLocked])
+
+  // Cursor-based 3D tilt: track mouse (and touch) on hero, normalized -1..1 from center
+  useEffect(() => {
+    const el = wrapperRef.current
+    if (!el) return
+
+    const updateTarget = (clientX, clientY) => {
+      const rect = el.getBoundingClientRect()
+      const x = (clientX - rect.left - rect.width / 2) / (rect.width / 2)
+      const y = (clientY - rect.top - rect.height / 2) / (rect.height / 2)
+      targetMouse.current.x = Math.max(-1, Math.min(1, x))
+      targetMouse.current.y = Math.max(-1, Math.min(1, y))
+    }
+
+    const handleMove = (e) => {
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY
+      updateTarget(clientX, clientY)
+    }
+    const handleLeave = () => {
+      targetMouse.current.x = 0
+      targetMouse.current.y = 0
+    }
+
+    el.addEventListener('mousemove', handleMove)
+    el.addEventListener('mouseleave', handleLeave)
+    el.addEventListener('touchmove', handleMove, { passive: true })
+    return () => {
+      el.removeEventListener('mousemove', handleMove)
+      el.removeEventListener('mouseleave', handleLeave)
+      el.removeEventListener('touchmove', handleMove)
+    }
+  }, [])
 
   // Track scroll position for indicator fade
   useEffect(() => {
@@ -238,18 +261,17 @@ const Hero = ({ heroImage }) => {
         hasScrolledPast.current = true
       }
 
-      // For touch devices: map scroll position to animation progress when scrolling down
+      // For touch devices: map scroll to progress 1:1 so hero doesn't lag
       if (isTouchDevice.current && scrollY <= windowHeight && !isScrollLocked) {
-        // Map scroll from 0 to windowHeight to progress 0 to 1
         const progress = Math.max(0, Math.min(1, scrollY / windowHeight))
         targetProgress.current = progress
+        currentProgress.current = progress
         return
       }
 
-      // If at top and scrolling up, lock and reset (desktop only, or touch when past)
+      // If at top and scrolling up, lock and start reverse (don't set currentProgress - let lerp animate)
       if (scrollY === 0 && scrollingUp && hasScrolledPast.current) {
         targetProgress.current = 0
-        currentProgress.current = 0
         if (!isTouchDevice.current) {
           isLockedRef.current = true
           setIsScrollLocked(true)
@@ -259,9 +281,8 @@ const Hero = ({ heroImage }) => {
         return
       }
 
-      // Start reverse animation ONLY when hero is centered (not just visible)
-      // Hero is centered when scrollY is below 20% of viewport height
-      const reverseStartPoint = windowHeight * 0.2
+      const reverseZone = windowHeight < 700 ? 0.1 : 0.2
+      const reverseStartPoint = windowHeight * reverseZone
       const isHeroCentered = scrollY <= reverseStartPoint
 
       // If scrolling up and hero is centered, lock scroll and allow reverse animation (desktop only)
@@ -303,14 +324,21 @@ const Hero = ({ heroImage }) => {
     }
   }, [animationProgress])
 
-  // Scale from 1 (100%) to 0.5 (50%)
   const imageScale = Math.max(0.5, 1 - (animationProgress * 0.5))
-  // Saturation from 100% to 0%
   const imageSaturation = Math.max(0, 1 - animationProgress)
-  // Signature opacity from 0 to 1
-  const signatureOpacity = Math.min(1, animationProgress)
-  // Indicator opacity: fade out as user scrolls (starts at scrollY=0, fully hidden at scrollY=200)
+  const signatureOpacity = animationProgress >= 0.56 ? 1 : 0
   const indicatorOpacity = Math.max(0, 1 - (scrollY / 200))
+  const tiltStrength = Math.max(0, 1 - animationProgress)
+  const tiltX = mouseTilt.y * -6 * tiltStrength
+  const tiltY = mouseTilt.x * 6 * tiltStrength
+  const parallaxMove = 22 * tiltStrength
+  const bgTranslateX = -mouseTilt.x * parallaxMove
+  const bgTranslateY = -mouseTilt.y * parallaxMove
+  const layerScale = 1.04
+
+  const containerTransform = useTwoLayers
+    ? `perspective(1200px) scale(${imageScale})`
+    : `perspective(1200px) scale(${imageScale}) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`
 
   return (
     <div ref={wrapperRef} className="hero-wrapper" id="home">
@@ -319,18 +347,54 @@ const Hero = ({ heroImage }) => {
         <div 
           className="hero-image-container"
           style={{
-            transform: `scale(${imageScale})`,
+            transform: containerTransform,
             filter: `saturate(${imageSaturation})`,
           }}
         >
-          <img 
-            src={heroImage || 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=2000'} 
-            alt="Hero" 
-            className="hero-image"
-            fetchPriority="high"
-            decoding="async"
-            loading="eager"
-          />
+          {useTwoLayers ? (
+            <>
+              <div
+                className="hero-background-layer"
+                style={{
+                  transform: `scale(${layerScale}) translate(${bgTranslateX}px, ${bgTranslateY}px)`,
+                }}
+              >
+                <img
+                  src={heroBackgroundImage}
+                  alt=""
+                  className="hero-image"
+                  fetchPriority="high"
+                  decoding="async"
+                  loading="eager"
+                  aria-hidden
+                />
+              </div>
+              <div
+                className="hero-subject-layer"
+                style={{
+                  transform: `scale(${layerScale}) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`,
+                }}
+              >
+                <img
+                  src={heroSubjectImage}
+                  alt="Hero"
+                  className="hero-image"
+                  fetchPriority="high"
+                  decoding="async"
+                  loading="eager"
+                />
+              </div>
+            </>
+          ) : (
+            <img 
+              src={heroImage || 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=2000'} 
+              alt="Hero" 
+              className="hero-image"
+              fetchPriority="high"
+              decoding="async"
+              loading="eager"
+            />
+          )}
         </div>
         <div 
           className="hero-signature-overlay"
