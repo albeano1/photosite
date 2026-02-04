@@ -1,7 +1,7 @@
 .signature-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-end;
+  align-items: flex-end;
   padding: 0;
   background: transparent;
 }
@@ -11,9 +11,14 @@
 }
 
 @media (max-width: 768px) {
+  .signature-container {
+    justify-content: center;
+  }
+
   .signature-svg {
-    width: 300px;
-    height: 120px;
+    width: min(380px, 92vw);
+    height: auto;
+    max-height: min(40vh, 420px);
   }
 }
 

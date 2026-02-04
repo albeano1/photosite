@@ -42,10 +42,12 @@ function App() {
         heroBackgroundImage={heroBackground}
         heroSubjectImage={heroSubject}
       />
-      <About />
-      <Gallery />
-      <Projects />
-      <Contact />
+      <div className="app-content">
+        <About />
+        <Gallery />
+        <Projects />
+        <Contact />
+      </div>
     </div>
   )
 }

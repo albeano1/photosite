@@ -1,9 +1,10 @@
 .hero-wrapper {
   position: relative;
   width: 100%;
-  height: 100vh; /* Exactly 100vh - no extra space */
+  height: 100vh;
   margin: 0;
   padding: 0;
+  overflow: visible;
 }
 
 .hero {
@@ -13,8 +14,8 @@
   height: 100vh;
   margin: 0;
   padding: 0;
-  overflow: hidden;
-  background: transparent; /* No background - seamless transition */
+  overflow: visible;
+  background: transparent;
   z-index: 1;
 }
 
@@ -69,15 +70,18 @@
 
 .hero-signature-overlay {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  bottom: 0;
+  right: 0;
+  left: auto;
+  top: auto;
+  transform: translate(42%, 32%);
   z-index: 3;
   pointer-events: none;
   transition: opacity 0.2s ease-out;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-end;
+  justify-content: flex-end;
+  overflow: visible;
 }
 
 .hero-scroll-indicator {
@@ -95,6 +99,16 @@
 @media (max-width: 768px) {
   .hero {
     height: 100vh;
+  }
+
+  .hero-signature-overlay {
+    bottom: 20%;
+    left: 0;
+    right: 0;
+    transform: none;
+    justify-content: center;
+    align-items: flex-end;
+    padding: 0 5%;
   }
 
   .hero-scroll-indicator {

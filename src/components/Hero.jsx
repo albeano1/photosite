@@ -48,7 +48,7 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
       const scrollY = window.scrollY || window.pageYOffset
       const windowHeight = window.innerHeight
       const scrollingUp = e.deltaY < 0
-      const scrollSensitivity = 0.005
+      const scrollSensitivity = 0.0014
       const reverseZone = windowHeight < 700 ? 0.1 : 0.2
       const reverseStartPoint = windowHeight * reverseZone
 
@@ -189,10 +189,10 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
             : 0
       const t = (now - driftStartTime.current) / 1000
       const mainRadius = 0.65
-      const mainSpeed = 0.4
+      const mainSpeed = 0.95
       const subRadius = 0.3
-      const autoDriftX = mainRadius * Math.cos(t * mainSpeed) + subRadius * Math.sin(t * 0.55)
-      const autoDriftY = mainRadius * Math.sin(t * mainSpeed) + subRadius * Math.cos(t * 0.48)
+      const autoDriftX = mainRadius * Math.cos(t * mainSpeed) + subRadius * Math.sin(t * 1.1)
+      const autoDriftY = mainRadius * Math.sin(t * mainSpeed) + subRadius * Math.cos(t * 0.95)
       const ax = Math.max(-1, Math.min(1, autoDriftX))
       const ay = Math.max(-1, Math.min(1, autoDriftY))
       targetMouse.current.x = cursorPosition.current.x * cursorInfluence + ax * (1 - cursorInfluence)

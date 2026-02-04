@@ -4,8 +4,8 @@ import './AnimatedSignature.css'
 
 // From src/images/Signature.svg – viewBox and paths (two strokes)
 const VIEW_BOX = '0 0 1421.7 1489.66'
-const SVG_WIDTH = 400
-const SVG_HEIGHT = 419
+const SVG_WIDTH = 1000
+const SVG_HEIGHT = 1048
 
 // Delay: signature starts drawing only after this much scroll progress (0–1). Higher = more desaturation first.
 const START_DELAY = 0.56
