@@ -13,14 +13,14 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
   const [animationProgress, setAnimationProgress] = useState(0)
   const [signatureComplete, setSignatureComplete] = useState(false)
   const [scrollY, setScrollY] = useState(0)
-  // Don't lock scroll on touch devices - they need normal scrolling
-  const [isScrollLocked, setIsScrollLocked] = useState(!isTouchDevice.current)
+  const [isScrollLocked, setIsScrollLocked] = useState(true)
   const rafId = useRef(null)
   const targetProgress = useRef(0)
   const currentProgress = useRef(0)
   const hasScrolledPast = useRef(false)
   const isLockingRef = useRef(false)
-  const isLockedRef = useRef(!isTouchDevice.current)
+  const isLockedRef = useRef(true)
+  const lastTouchY = useRef(0)
   const savedScrollY = useRef(0)
   const targetMouse = useRef({ x: 0, y: 0 })
   const currentMouse = useRef({ x: 0, y: 0 })
@@ -103,25 +103,11 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
     }
 
     const handleScroll = () => {
-      // On touch devices, allow scrolling to unlock naturally
-      if (isTouchDevice.current && isLockedRef.current) {
-        const scrollY = window.scrollY || window.pageYOffset
-        // If user scrolled down on touch device, unlock immediately
-        if (scrollY > 50) {
-          targetProgress.current = 1
-          currentProgress.current = 1
-          isLockedRef.current = false
-          setIsScrollLocked(false)
-          return
-        }
-      }
-      // If locked, prevent any scrolling (desktop only)
-      if (isLockedRef.current && window.scrollY > 0 && !isTouchDevice.current) {
+      if (isLockedRef.current && window.scrollY > 0) {
         window.scrollTo({ top: 0, behavior: 'auto' })
       }
     }
 
-    // Only use wheel handler on non-touch devices
     if (!isTouchDevice.current) {
       window.addEventListener('wheel', handleWheel, { passive: false })
     }
@@ -135,9 +121,46 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
     }
   }, [isScrollLocked])
 
+  // Touch: drive progress like wheel so hero stays centered until small state
+  const touchScrollSensitivity = 0.0014
+  useEffect(() => {
+    if (!isTouchDevice.current) return
+    const el = wrapperRef.current
+    if (!el) return
+
+    const handleTouchStart = (e) => {
+      if (e.touches.length) lastTouchY.current = e.touches[0].clientY
+    }
+    const handleTouchMove = (e) => {
+      if (!isLockedRef.current || !e.touches.length) return
+      const clientY = e.touches[0].clientY
+      const deltaY = lastTouchY.current - clientY
+      lastTouchY.current = clientY
+      const newProgress = targetProgress.current + (deltaY * touchScrollSensitivity)
+      if (newProgress >= 1.0 && deltaY > 0) {
+        targetProgress.current = 1
+        hasScrolledPast.current = true
+        isLockedRef.current = false
+        isLockingRef.current = false
+        setIsScrollLocked(false)
+        e.preventDefault()
+        return
+      }
+      targetProgress.current = Math.max(0, Math.min(1, newProgress))
+      e.preventDefault()
+    }
+
+    el.addEventListener('touchstart', handleTouchStart, { passive: true })
+    el.addEventListener('touchmove', handleTouchMove, { passive: false })
+    return () => {
+      el.removeEventListener('touchstart', handleTouchStart)
+      el.removeEventListener('touchmove', handleTouchMove)
+    }
+  }, [])
+
   // Sync scroll lock state with DOM; preserve scroll position to avoid snap/jump
   useEffect(() => {
-    if (isScrollLocked && !isTouchDevice.current) {
+    if (isScrollLocked) {
       savedScrollY.current = window.scrollY || window.pageYOffset
       document.body.style.top = `-${savedScrollY.current}px`
       document.body.style.overflow = 'hidden'
@@ -180,13 +203,15 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
 
       const now = typeof performance !== 'undefined' ? performance.now() : Date.now()
       const timeSinceMove = lastMouseMoveTime.current < 0 ? 1e9 : now - lastMouseMoveTime.current
-      const cursorInfluence = lastMouseMoveTime.current < 0
+      const cursorInfluence = isTouchDevice.current
         ? 0
-        : timeSinceMove < 1200
-          ? 1
-          : timeSinceMove < 2800
-            ? 1 - (timeSinceMove - 1200) / 1600
-            : 0
+        : lastMouseMoveTime.current < 0
+          ? 0
+          : timeSinceMove < 1200
+            ? 1
+            : timeSinceMove < 2800
+              ? 1 - (timeSinceMove - 1200) / 1600
+              : 0
       const t = (now - driftStartTime.current) / 1000
       const mainRadius = 0.65
       const mainSpeed = 0.95
@@ -206,7 +231,7 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
       const mx = currentMouse.current.x
       const my = currentMouse.current.y
       const tiltStr = Math.max(0, 1 - currentProgress.current)
-      const layerScale = 1.04
+      const layerScale = 1.22
       if (heroBackgroundRef.current) {
         const pm = 22 * tiltStr
         heroBackgroundRef.current.style.transform = `scale(${layerScale}) translate(${-mx * pm}px, ${-my * pm}px)`
@@ -313,21 +338,11 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
         hasScrolledPast.current = true
       }
 
-      // For touch devices: map scroll to progress 1:1 so hero doesn't lag
-      if (isTouchDevice.current && scrollY <= windowHeight && !isScrollLocked) {
-        const progress = Math.max(0, Math.min(1, scrollY / windowHeight))
-        targetProgress.current = progress
-        currentProgress.current = progress
-        return
-      }
-
       // If at top and scrolling up, lock and start reverse (don't set currentProgress - let lerp animate)
       if (scrollY === 0 && scrollingUp && hasScrolledPast.current) {
         targetProgress.current = 0
-        if (!isTouchDevice.current) {
-          isLockedRef.current = true
-          setIsScrollLocked(true)
-        }
+        isLockedRef.current = true
+        setIsScrollLocked(true)
         setSignatureComplete(false)
         hasScrolledPast.current = false
         return
@@ -386,7 +401,7 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
   const parallaxMove = 22 * tiltStrength
   const bgTranslateX = -mouseTilt.x * parallaxMove
   const bgTranslateY = -mouseTilt.y * parallaxMove
-  const layerScale = 1.04
+  const layerScale = 1.22
 
   const containerTransform = useTwoLayers
     ? `perspective(1200px) scale(${imageScale})`
@@ -408,7 +423,7 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
               <div
                 ref={heroBackgroundRef}
                 className="hero-background-layer"
-                style={{ transform: 'scale(1.04) translate(0px, 0px)' }}
+                style={{ transform: 'scale(1.22) translate(0px, 0px)' }}
               >
                 <img
                   src={heroBackgroundImage}
@@ -423,7 +438,7 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
               <div
                 ref={heroSubjectRef}
                 className="hero-subject-layer"
-                style={{ transform: 'scale(1.04) rotateX(0deg) rotateY(0deg)' }}
+                style={{ transform: 'scale(1.22) rotateX(0deg) rotateY(0deg)' }}
               >
                 <img
                   src={heroSubjectImage}
