@@ -71,17 +71,17 @@
 
 .hero-signature-overlay {
   position: absolute;
-  bottom: 0;
+  bottom: 15%;
+  left: 0;
   right: 0;
-  left: auto;
   top: auto;
-  transform: translate(42%, 32%);
+  transform: none;
   z-index: 3;
   pointer-events: none;
   transition: opacity 0.2s ease-out;
   display: flex;
   align-items: flex-end;
-  justify-content: flex-end;
+  justify-content: center;
   overflow: visible;
 }
 

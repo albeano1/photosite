@@ -231,7 +231,7 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
       const mx = currentMouse.current.x
       const my = currentMouse.current.y
       const tiltStr = Math.max(0, 1 - currentProgress.current)
-      const layerScale = 1.22
+      const layerScale = 1.04
       if (heroBackgroundRef.current) {
         const pm = 22 * tiltStr
         heroBackgroundRef.current.style.transform = `scale(${layerScale}) translate(${-mx * pm}px, ${-my * pm}px)`
@@ -401,7 +401,7 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
   const parallaxMove = 22 * tiltStrength
   const bgTranslateX = -mouseTilt.x * parallaxMove
   const bgTranslateY = -mouseTilt.y * parallaxMove
-  const layerScale = 1.22
+  const layerScale = 1.04
 
   const containerTransform = useTwoLayers
     ? `perspective(1200px) scale(${imageScale})`
@@ -423,7 +423,7 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
               <div
                 ref={heroBackgroundRef}
                 className="hero-background-layer"
-                style={{ transform: 'scale(1.22) translate(0px, 0px)' }}
+                style={{ transform: 'scale(1.04) translate(0px, 0px)' }}
               >
                 <img
                   src={heroBackgroundImage}
@@ -438,7 +438,7 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
               <div
                 ref={heroSubjectRef}
                 className="hero-subject-layer"
-                style={{ transform: 'scale(1.22) rotateX(0deg) rotateY(0deg)' }}
+                style={{ transform: 'scale(1.04) rotateX(0deg) rotateY(0deg)' }}
               >
                 <img
                   src={heroSubjectImage}
