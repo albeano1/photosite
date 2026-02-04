@@ -24,6 +24,13 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
   const savedScrollY = useRef(0)
   const targetMouse = useRef({ x: 0, y: 0 })
   const currentMouse = useRef({ x: 0, y: 0 })
+  const cursorPosition = useRef({ x: 0, y: 0 })
+  const lastMouseMoveTime = useRef(-1)
+  const lastClientX = useRef(-9999)
+  const lastClientY = useRef(-9999)
+  const driftStartTime = useRef(typeof performance !== 'undefined' ? performance.now() : 0)
+  const heroBackgroundRef = useRef(null)
+  const heroSubjectRef = useRef(null)
   const [mouseTilt, setMouseTilt] = useState({ x: 0, y: 0 })
 
   // Smooth interpolation
@@ -171,10 +178,44 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
       }
       setAnimationProgress(currentProgress.current)
 
-      const mouseFactor = 0.08
+      const now = typeof performance !== 'undefined' ? performance.now() : Date.now()
+      const timeSinceMove = lastMouseMoveTime.current < 0 ? 1e9 : now - lastMouseMoveTime.current
+      const cursorInfluence = lastMouseMoveTime.current < 0
+        ? 0
+        : timeSinceMove < 1200
+          ? 1
+          : timeSinceMove < 2800
+            ? 1 - (timeSinceMove - 1200) / 1600
+            : 0
+      const t = (now - driftStartTime.current) / 1000
+      const mainRadius = 0.65
+      const mainSpeed = 0.4
+      const subRadius = 0.3
+      const autoDriftX = mainRadius * Math.cos(t * mainSpeed) + subRadius * Math.sin(t * 0.55)
+      const autoDriftY = mainRadius * Math.sin(t * mainSpeed) + subRadius * Math.cos(t * 0.48)
+      const ax = Math.max(-1, Math.min(1, autoDriftX))
+      const ay = Math.max(-1, Math.min(1, autoDriftY))
+      targetMouse.current.x = cursorPosition.current.x * cursorInfluence + ax * (1 - cursorInfluence)
+      targetMouse.current.y = cursorPosition.current.y * cursorInfluence + ay * (1 - cursorInfluence)
+
+      const mouseFactor = cursorInfluence > 0.5 ? 0.08 : 0.35
       currentMouse.current.x = lerp(currentMouse.current.x, targetMouse.current.x, mouseFactor)
       currentMouse.current.y = lerp(currentMouse.current.y, targetMouse.current.y, mouseFactor)
       setMouseTilt({ x: currentMouse.current.x, y: currentMouse.current.y })
+
+      const mx = currentMouse.current.x
+      const my = currentMouse.current.y
+      const tiltStr = Math.max(0, 1 - currentProgress.current)
+      const layerScale = 1.04
+      if (heroBackgroundRef.current) {
+        const pm = 22 * tiltStr
+        heroBackgroundRef.current.style.transform = `scale(${layerScale}) translate(${-mx * pm}px, ${-my * pm}px)`
+      }
+      if (heroSubjectRef.current) {
+        const tx = my * -6 * tiltStr
+        const ty = mx * 6 * tiltStr
+        heroSubjectRef.current.style.transform = `scale(${layerScale}) rotateX(${tx}deg) rotateY(${ty}deg)`
+      }
 
       rafId.current = requestAnimationFrame(updateProgress)
     }
@@ -201,12 +242,20 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
     const el = wrapperRef.current
     if (!el) return
 
+    const MOVE_THRESHOLD_PX = 18
     const updateTarget = (clientX, clientY) => {
+      const isFirst = lastClientX.current === -9999
+      const dx = clientX - lastClientX.current
+      const dy = clientY - lastClientY.current
+      const moved = !isFirst && Math.sqrt(dx * dx + dy * dy) >= MOVE_THRESHOLD_PX
+      lastClientX.current = clientX
+      lastClientY.current = clientY
       const rect = el.getBoundingClientRect()
       const x = (clientX - rect.left - rect.width / 2) / (rect.width / 2)
       const y = (clientY - rect.top - rect.height / 2) / (rect.height / 2)
-      targetMouse.current.x = Math.max(-1, Math.min(1, x))
-      targetMouse.current.y = Math.max(-1, Math.min(1, y))
+      cursorPosition.current.x = Math.max(-1, Math.min(1, x))
+      cursorPosition.current.y = Math.max(-1, Math.min(1, y))
+      if (moved) lastMouseMoveTime.current = typeof performance !== 'undefined' ? performance.now() : Date.now()
     }
 
     const handleMove = (e) => {
@@ -215,8 +264,11 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
       updateTarget(clientX, clientY)
     }
     const handleLeave = () => {
-      targetMouse.current.x = 0
-      targetMouse.current.y = 0
+      cursorPosition.current.x = 0
+      cursorPosition.current.y = 0
+      lastMouseMoveTime.current = -1
+      lastClientX.current = -9999
+      lastClientY.current = -9999
     }
 
     el.addEventListener('mousemove', handleMove)
@@ -354,10 +406,9 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
           {useTwoLayers ? (
             <>
               <div
+                ref={heroBackgroundRef}
                 className="hero-background-layer"
-                style={{
-                  transform: `scale(${layerScale}) translate(${bgTranslateX}px, ${bgTranslateY}px)`,
-                }}
+                style={{ transform: 'scale(1.04) translate(0px, 0px)' }}
               >
                 <img
                   src={heroBackgroundImage}
@@ -370,10 +421,9 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
                 />
               </div>
               <div
+                ref={heroSubjectRef}
                 className="hero-subject-layer"
-                style={{
-                  transform: `scale(${layerScale}) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`,
-                }}
+                style={{ transform: 'scale(1.04) rotateX(0deg) rotateY(0deg)' }}
               >
                 <img
                   src={heroSubjectImage}
