@@ -103,12 +103,13 @@
   }
 
   .hero-signature-overlay {
-    bottom: 20%;
+    top: 50%;
+    bottom: auto;
     left: 0;
     right: 0;
-    transform: none;
+    transform: translateY(-50%);
     justify-content: center;
-    align-items: flex-end;
+    align-items: center;
     padding: 0 5%;
   }
 
