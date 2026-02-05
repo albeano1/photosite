@@ -69,6 +69,16 @@
   pointer-events: none;
 }
 
+/* Desktop: vertical source images cropped for horizontal viewport; subject given more frame */
+@media (min-width: 769px) {
+  .hero-background-layer .hero-image {
+    object-position: center center;
+  }
+  .hero-subject-layer .hero-image {
+    object-position: center 40%;
+  }
+}
+
 .hero-signature-overlay {
   position: absolute;
   bottom: 15%;
@@ -98,8 +108,19 @@
 }
 
 @media (max-width: 768px) {
+  .hero-wrapper {
+    min-height: 100vh;
+    height: calc(100vh + 4px);
+  }
+
   .hero {
-    height: 100vh;
+    min-height: 100vh;
+    height: calc(100vh + 4px);
+  }
+
+  .hero-image-container {
+    min-height: 100%;
+    bottom: 0;
   }
 
   .hero-signature-overlay {

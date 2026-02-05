@@ -213,9 +213,9 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
               ? 1 - (timeSinceMove - 1200) / 1600
               : 0
       const t = (now - driftStartTime.current) / 1000
-      const mainRadius = 0.65
-      const mainSpeed = 0.95
-      const subRadius = 0.3
+      const mainRadius = 0.12
+      const mainSpeed = 0.5
+      const subRadius = 0.05
       const autoDriftX = mainRadius * Math.cos(t * mainSpeed) + subRadius * Math.sin(t * 1.1)
       const autoDriftY = mainRadius * Math.sin(t * mainSpeed) + subRadius * Math.cos(t * 0.95)
       const ax = Math.max(-1, Math.min(1, autoDriftX))
@@ -223,7 +223,7 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
       targetMouse.current.x = cursorPosition.current.x * cursorInfluence + ax * (1 - cursorInfluence)
       targetMouse.current.y = cursorPosition.current.y * cursorInfluence + ay * (1 - cursorInfluence)
 
-      const mouseFactor = cursorInfluence > 0.5 ? 0.08 : 0.35
+      const mouseFactor = cursorInfluence > 0.5 ? 0.05 : 0.22
       currentMouse.current.x = lerp(currentMouse.current.x, targetMouse.current.x, mouseFactor)
       currentMouse.current.y = lerp(currentMouse.current.y, targetMouse.current.y, mouseFactor)
       setMouseTilt({ x: currentMouse.current.x, y: currentMouse.current.y })
@@ -231,14 +231,14 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
       const mx = currentMouse.current.x
       const my = currentMouse.current.y
       const tiltStr = Math.max(0, 1 - currentProgress.current)
-      const layerScale = 1.04
+      const layerScale = 1.08
       if (heroBackgroundRef.current) {
-        const pm = 22 * tiltStr
+        const pm = 14 * tiltStr
         heroBackgroundRef.current.style.transform = `scale(${layerScale}) translate(${-mx * pm}px, ${-my * pm}px)`
       }
       if (heroSubjectRef.current) {
-        const tx = my * -6 * tiltStr
-        const ty = mx * 6 * tiltStr
+        const tx = my * -4 * tiltStr
+        const ty = mx * 4 * tiltStr
         heroSubjectRef.current.style.transform = `scale(${layerScale}) rotateX(${tx}deg) rotateY(${ty}deg)`
       }
 
@@ -396,12 +396,12 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
   const signatureOpacity = animationProgress >= 0.56 ? 1 : 0
   const indicatorOpacity = Math.max(0, 1 - (scrollY / 200))
   const tiltStrength = Math.max(0, 1 - animationProgress)
-  const tiltX = mouseTilt.y * -6 * tiltStrength
-  const tiltY = mouseTilt.x * 6 * tiltStrength
-  const parallaxMove = 22 * tiltStrength
+  const tiltX = mouseTilt.y * -4 * tiltStrength
+  const tiltY = mouseTilt.x * 4 * tiltStrength
+  const parallaxMove = 14 * tiltStrength
   const bgTranslateX = -mouseTilt.x * parallaxMove
   const bgTranslateY = -mouseTilt.y * parallaxMove
-  const layerScale = 1.04
+  const layerScale = 1.08
 
   const containerTransform = useTwoLayers
     ? `perspective(1200px) scale(${imageScale})`
@@ -423,7 +423,7 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
               <div
                 ref={heroBackgroundRef}
                 className="hero-background-layer"
-                style={{ transform: 'scale(1.04) translate(0px, 0px)' }}
+                style={{ transform: 'scale(1.08) translate(0px, 0px)' }}
               >
                 <img
                   src={heroBackgroundImage}
@@ -438,7 +438,7 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
               <div
                 ref={heroSubjectRef}
                 className="hero-subject-layer"
-                style={{ transform: 'scale(1.04) rotateX(0deg) rotateY(0deg)' }}
+                style={{ transform: 'scale(1.08) rotateX(0deg) rotateY(0deg)' }}
               >
                 <img
                   src={heroSubjectImage}

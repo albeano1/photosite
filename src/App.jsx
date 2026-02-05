@@ -7,8 +7,8 @@ import Contact from "./components/Contact"
 import Loading from "./components/Loading"
 import "./App.css"
 
-import heroBackground from "./images/herobg.png"
-import heroSubject from "./images/herosubject.png"
+import heroBackground from "./images/bghero.jpg"
+import heroSubject from "./images/subjecthero.png"
 
 function App() {
   const [isLoading, setIsLoading] = useState(true)
