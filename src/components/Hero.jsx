@@ -122,7 +122,7 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
   }, [isScrollLocked])
 
   // Touch: drive progress like wheel so hero stays centered until small state
-  const touchScrollSensitivity = 0.0014
+  const touchScrollSensitivity = 0.0055
   useEffect(() => {
     if (!isTouchDevice.current) return
     const el = wrapperRef.current
@@ -338,37 +338,36 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
         hasScrolledPast.current = true
       }
 
-      // If at top and scrolling up, lock and start reverse (don't set currentProgress - let lerp animate)
-      if (scrollY === 0 && scrollingUp && hasScrolledPast.current) {
+      const reverseZone = windowHeight < 700 ? 0.1 : 0.2
+      const reverseStartPoint = windowHeight * reverseZone
+      const isHeroCentered = scrollY <= reverseStartPoint
+      const nearTop = scrollY <= 30
+
+      // If near top and scrolling up, lock and start reverse (touch often doesn't land on exact 0)
+      if (nearTop && scrollingUp && hasScrolledPast.current) {
         targetProgress.current = 0
+        savedScrollY.current = 0
         isLockedRef.current = true
         setIsScrollLocked(true)
         setSignatureComplete(false)
         hasScrolledPast.current = false
+        if (scrollY > 0) {
+          window.scrollTo({ top: 0, behavior: 'auto' })
+        }
         return
       }
 
-      const reverseZone = windowHeight < 700 ? 0.1 : 0.2
-      const reverseStartPoint = windowHeight * reverseZone
-      const isHeroCentered = scrollY <= reverseStartPoint
-
-      // If scrolling up and hero is centered, lock scroll and allow reverse animation (desktop only)
-      // Note: wheel handler will catch this immediately, but this is a backup
-      if (!isTouchDevice.current && scrollingUp && isHeroCentered && hasScrolledPast.current && !isLockingRef.current && !isLockedRef.current) {
-        // Lock immediately using ref (no delay)
+      // If scrolling up and hero is centered, lock and allow reverse. On touch: allow without having scrolled past (one swipe at hero triggers grow)
+      const canReverse = hasScrolledPast.current || isTouchDevice.current
+      if (scrollingUp && isHeroCentered && canReverse && !isLockingRef.current && !isLockedRef.current) {
         isLockingRef.current = true
         isLockedRef.current = true
         setIsScrollLocked(true)
-        
-        // Map scroll position to progress - hero is centered, so map directly
+
         let reverseProgress = Math.max(0, Math.min(1, scrollY / reverseStartPoint))
-        
-        // Always use current progress as minimum to avoid snapping backward
         reverseProgress = Math.max(currentProgress.current, reverseProgress)
-        
         targetProgress.current = reverseProgress
       }
-      // Don't interfere when hero is visible but not centered - let page scroll normally
 
       lastScrollY = scrollY
     }
