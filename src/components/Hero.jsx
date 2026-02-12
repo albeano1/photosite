@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import AnimatedSignature from './AnimatedSignature'
 import BackgroundWords from './BackgroundWords'
+import HeroDepthCanvas from './HeroDepthCanvas'
 import './Hero.css'
 
-const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
-  const useTwoLayers = Boolean(heroBackgroundImage && heroSubjectImage)
+const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage }) => {
+  const useDepthMap = Boolean(heroImage && depthMapImage)
+  const useTwoLayers = !useDepthMap && Boolean(heroBackgroundImage && heroSubjectImage)
   const heroRef = useRef(null)
   const wrapperRef = useRef(null)
   // Detect touch device first
@@ -122,7 +124,7 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
   }, [isScrollLocked])
 
   // Touch: drive progress like wheel so hero stays centered until small state
-  const touchScrollSensitivity = 0.0055
+  const touchScrollSensitivity = 0.01
   useEffect(() => {
     if (!isTouchDevice.current) return
     const el = wrapperRef.current
@@ -411,13 +413,33 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
       <section ref={heroRef} className="hero">
         <BackgroundWords />
         <div 
-          className="hero-image-container"
+          className={`hero-image-container${useDepthMap ? ' hero-image-container--depth' : ''}`}
           style={{
             transform: containerTransform,
-            filter: `saturate(${imageSaturation})`,
+            filter: useDepthMap ? 'none' : `saturate(${imageSaturation})`,
           }}
         >
-          {useTwoLayers ? (
+          {useDepthMap ? (
+            <>
+              <img
+                src={heroImage}
+                alt=""
+                className="hero-image hero-depth-fallback"
+                fetchPriority="high"
+                decoding="async"
+                loading="eager"
+                aria-hidden
+              />
+              <HeroDepthCanvas
+                photoUrl={heroImage}
+                depthUrl={depthMapImage}
+                parallaxX={mouseTilt.x}
+                parallaxY={mouseTilt.y}
+                saturation={imageSaturation}
+                scale={imageScale}
+              />
+            </>
+          ) : useTwoLayers ? (
             <>
               <div
                 ref={heroBackgroundRef}
@@ -459,21 +481,21 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage }) => {
               loading="eager"
             />
           )}
-        </div>
-        <div 
-          className="hero-signature-overlay"
-          style={{
-            opacity: signatureOpacity,
-          }}
-        >
-          <AnimatedSignature 
-            progress={animationProgress}
-            onAnimationComplete={() => {
-              if (animationProgress >= 1) {
-                setSignatureComplete(true)
-              }
+          <div 
+            className="hero-signature-overlay"
+            style={{
+              opacity: signatureOpacity,
             }}
-          />
+          >
+            <AnimatedSignature 
+              progress={animationProgress}
+              onAnimationComplete={() => {
+                if (animationProgress >= 1) {
+                  setSignatureComplete(true)
+                }
+              }}
+            />
+          </div>
         </div>
         <div 
           className="hero-scroll-indicator"

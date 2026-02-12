@@ -7,8 +7,8 @@ import Contact from "./components/Contact"
 import Loading from "./components/Loading"
 import "./App.css"
 
-import heroBackground from "./images/bghero.jpg"
-import heroSubject from "./images/subjecthero.png"
+import heroPhoto from "./images/hero/photo.jpg"
+import heroDepth from "./images/hero/depth.png"
 
 function App() {
   const [isLoading, setIsLoading] = useState(true)
@@ -21,14 +21,14 @@ function App() {
         setTimeout(() => setIsLoading(false), 500)
       }
     }
-    const imgBg = new Image()
-    imgBg.src = heroBackground
-    imgBg.onload = maybeDone
-    imgBg.onerror = maybeDone
-    const imgSub = new Image()
-    imgSub.src = heroSubject
-    imgSub.onload = maybeDone
-    imgSub.onerror = maybeDone
+    const imgPhoto = new Image()
+    imgPhoto.src = heroPhoto
+    imgPhoto.onload = maybeDone
+    imgPhoto.onerror = maybeDone
+    const imgDepth = new Image()
+    imgDepth.src = heroDepth
+    imgDepth.onload = maybeDone
+    imgDepth.onerror = maybeDone
 
     const timeout = setTimeout(() => setIsLoading(false), 3000)
     return () => clearTimeout(timeout)
@@ -38,9 +38,8 @@ function App() {
     <div className="app">
       <Loading show={isLoading} />
       <Hero
-        heroImage={heroBackground}
-        heroBackgroundImage={heroBackground}
-        heroSubjectImage={heroSubject}
+        heroImage={heroPhoto}
+        depthMapImage={heroDepth}
       />
       <div className="app-content">
         <About />

@@ -9,18 +9,24 @@ const imageModules = import.meta.glob('../images/portfolio/*.{jpg,jpeg,png,JPG,J
 
 const images = Object.values(imageModules)
 
-const shuffleArray = (array) => {
+// Seeded shuffle: same order every time, but not by name/date (deterministic mix)
+const seededShuffle = (array, seed = 2847) => {
   const shuffled = [...array]
+  let s = seed
+  const next = () => {
+    s = (s * 1103515245 + 12345) & 0x7fffffff
+    return s / 0x7fffffff
+  }
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    const j = Math.floor(next() * (i + 1))
+    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
   }
   return shuffled
 }
 
 const Gallery = () => {
   const gridColumns = useMemo(() => {
-    const shuffledImages = shuffleArray(images)
+    const shuffledImages = seededShuffle(images)
     const numColumns = Math.min(4, shuffledImages.length > 0 ? 4 : 0)
     const cols = Array.from({ length: numColumns }, () => [])
     shuffledImages.forEach((image, index) => {

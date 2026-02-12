@@ -3,8 +3,7 @@ import './BackgroundWords.css'
 
 const BackgroundWords = () => {
   const words = [
-    'PHOTOGRAPHY', 'MOMENTS', 'MEMORIES', 'LIGHT', 'SHADOW',
-    'COMPOSITION', 'BEAUTY', 'ART', 'VISION', 'CREATIVE',
+    'PHOTOGRAPHY', 'Developer', 'COMPOSITION', 'ART', 'CREATIVE',
     'STORYTELLING', 'EMOTION', 'DEPTH', 'PERSPECTIVE', 'FRAME',
     'CAPTURE', 'INSPIRE', 'CREATE', 'EXPLORE', 'DISCOVER'
   ]

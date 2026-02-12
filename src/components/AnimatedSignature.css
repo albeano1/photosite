@@ -8,6 +8,7 @@
 
 .signature-svg {
   width: 500px;
+  max-width: min(500px, calc(100vw - 4rem));
   height: auto;
   filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.7));
 }
@@ -18,9 +19,9 @@
   }
 
   .signature-svg {
-    width: min(190px, 46vw);
+    width: min(300px, 78vw);
     height: auto;
-    max-height: min(20vh, 210px);
+    max-height: min(32vh, 320px);
   }
 }
 

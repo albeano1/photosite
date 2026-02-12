@@ -14,7 +14,7 @@
   height: 100vh;
   margin: 0;
   padding: 0;
-  overflow: visible;
+  overflow: hidden;
   background: transparent;
   z-index: 1;
 }
@@ -30,6 +30,35 @@
   will-change: transform, filter;
   z-index: 1;
   overflow: hidden;
+}
+
+/* Depth mode: oversize container so when it rotates, edges stay clipped by .hero */
+.hero-image-container.hero-image-container--depth {
+  width: 130%;
+  height: 130%;
+  top: -15%;
+  left: -15%;
+}
+
+.hero-depth-fallback {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  z-index: 0;
+}
+
+.hero-depth-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 1;
 }
 
 .hero-background-layer,
@@ -93,6 +122,8 @@
   align-items: flex-end;
   justify-content: center;
   overflow: visible;
+  padding: 0 2rem;
+  box-sizing: border-box;
 }
 
 @keyframes hero-scroll-blink {
