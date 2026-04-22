@@ -72,6 +72,97 @@
   max-width: 100%;
 }
 
+.gallery-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.gallery-lightbox-carousel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  max-width: 100%;
+}
+
+.gallery-lightbox-image-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: min(90vw, 1200px);
+  max-height: 90vh;
+}
+
+.gallery-lightbox-image {
+  max-width: min(90vw, 1200px);
+  max-height: 90vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.gallery-lightbox-arrow {
+  flex-shrink: 0;
+  border: none;
+  background: rgba(10, 10, 10, 0.75);
+  color: #ffffff;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+}
+
+.gallery-lightbox-arrow:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: scale(1.05);
+}
+
+.gallery-lightbox-arrow--left {
+  order: -1;
+}
+
+.gallery-lightbox-arrow--right {
+  order: 1;
+}
+
+.gallery-lightbox-close {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  border: none;
+  background: rgba(10, 10, 10, 0.75);
+  color: #ffffff;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+}
+
+.gallery-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: scale(1.05);
+}
+
 @media (max-width: 1200px) {
   .gallery-wrapper {
     padding: 2.5rem 2rem;
@@ -121,6 +212,22 @@
   .gallery-title {
     margin-bottom: 3rem;
     font-size: clamp(2rem, 10vw, 3rem);
+  }
+
+  .gallery-lightbox {
+    padding: 1.5rem;
+  }
+
+  .gallery-lightbox-arrow {
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.75rem;
+  }
+
+
+  .gallery-lightbox-close {
+    top: 1.5rem;
+    right: 1.5rem;
   }
 }
 
