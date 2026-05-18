@@ -18,10 +18,10 @@ const Projects = () => {
       image: null
     },
     {
-      title: 'JJ Optimization',
-      description: 'A tool optimized for making the best most optimal jj recipe .',
-      tech: ['React', 'CSS'],
-      link: 'https://jj.seannickerson.com',
+      title: 'Factor-investing tool',
+      description: 'Python research pipeline that ingests public equity data, across multiple factors momentum, mean reversion, volatility, measures predictive power with IC and horizon decay, and backtests portfolios with turnover based costs, and walk forward splits',
+      tech: ['Python'],
+      link: 'https://github.com/albeano1/Factor-investing',
       image: null
     }
   ]
