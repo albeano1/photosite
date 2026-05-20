@@ -5,6 +5,7 @@ import Gallery from "./components/Gallery"
 import Projects from "./components/Projects"
 import Contact from "./components/Contact"
 import Loading from "./components/Loading"
+import { useAnimatedTitle } from "./hooks/useAnimatedTitle"
 import "./App.css"
 
 import heroPhoto from "./images/hero/photo.jpg"
@@ -12,6 +13,8 @@ import heroDepth from "./images/hero/depth.png"
 
 function App() {
   const [isLoading, setIsLoading] = useState(true)
+
+  useAnimatedTitle(!isLoading)
 
   useEffect(() => {
     let loaded = 0
