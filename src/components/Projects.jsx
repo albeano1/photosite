@@ -37,6 +37,13 @@ const Projects = () => {
       tech: ['Python', 'Pandas', 'NumPy'],
       link: 'https://github.com/albeano1/Risk-engine-analytical-portfolio-',
       image: null
+    },
+    {
+      title: 'Real-Time Streaming Alpha',
+      description: 'Live market data pipeline: Polygon WebSocket ingestion through Kafka, rolling tick features, online sklearn signals, and a paper execution simulator with slippage and position limits. React dashboard shows pipeline stages, prices, alpha, and manual or auto-trade on play money.',
+      tech: ['Python', 'React', 'Kafka', 'Docker'],
+      link: 'https://github.com/albeano1/Real-time-market-stream',
+      image: null
     }
   ]
 
