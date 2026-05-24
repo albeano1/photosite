@@ -301,14 +301,14 @@ export class HeroFluidSim {
     this.config = {
       simResolution: 128,
       dyeResolution: 512,
-      densityDissipation: 0.38,
-      velocityDissipation: 0.11,
-      pressure: 0.75,
-      pressureIterations: 14,
-      curl: 44,
+      densityDissipation: 0.3,
+      velocityDissipation: 0.34,
+      pressure: 0.82,
+      pressureIterations: 16,
+      curl: 18,
       splatRadius: 0.09,
       dyeSplatRadius: 0.055,
-      splatForce: 7800,
+      splatForce: 4200,
     }
 
     this.programs = {}
@@ -336,10 +336,7 @@ export class HeroFluidSim {
     this.divergence = null
     this.curl = null
     this.pressure = null
-    this.ambientTimer = 0
-    this.ambientBurstIndex = 0
     this.resize(width, height)
-    this.seedAmbient()
   }
 
   getDyeTexture() {
@@ -487,7 +484,7 @@ export class HeroFluidSim {
       const t = i / Math.max(1, steps - 1)
       const taper = Math.pow(1 - t, 1.65)
       const behind = move * t * trailLength + t * 0.007
-      const velBoost = 0.75 + taper * 0.55
+      const velBoost = 0.45 + taper * 0.35
 
       this.splat(
         x - dirX * behind,
@@ -503,40 +500,9 @@ export class HeroFluidSim {
     }
   }
 
-  ambientSplotchBurst(count = 6) {
-    for (let i = 0; i < count; i++) {
-      const x = 0.06 + Math.random() * 0.88
-      const y = 0.08 + Math.random() * 0.84
-      const angle = Math.random() * Math.PI * 2
-      const speed = 180 + Math.random() * 420
-      this.splat(
-        x,
-        y,
-        Math.cos(angle) * speed,
-        Math.sin(angle) * speed,
-        0.004 + Math.random() * 0.005,
-        { splatRadius: 0.022, dyeSplatRadius: 0.012 }
-      )
-    }
-  }
-
-  seedAmbient() {
-    for (let i = 0; i < 12; i++) {
-      this.ambientSplotchBurst(6 + (i % 4))
-    }
-  }
-
   step(dt) {
     const { gl, config } = this
     gl.disable(gl.BLEND)
-
-    this.ambientTimer += dt
-    if (this.ambientTimer > 0.09) {
-      this.ambientTimer = 0
-      const burstCount = 7 + (this.ambientBurstIndex % 4)
-      this.ambientSplotchBurst(burstCount)
-      this.ambientBurstIndex += 1
-    }
 
     let p = this.bindProgram('curl')
     gl.uniform2f(p.uniforms.texelSize, this.velocity.texelSizeX, this.velocity.texelSizeY)

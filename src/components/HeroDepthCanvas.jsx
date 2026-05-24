@@ -31,13 +31,19 @@ const FRAGMENT = `
     vec4 color = texture2D(uColor, colorUv);
     float g = dot(color.rgb, vec3(0.299, 0.587, 0.114));
     vec3 gray = vec3(g, g, g);
+    vec3 lowSat = mix(color.rgb, gray, 0.85);
+
+    // Brighter depth = closer subject; mask at screen uv so edges stay aligned
+    float subjectDepth = texture2D(uDepth, uv).r;
+    float foreground = smoothstep(0.24, 0.40, subjectDepth);
+    float backgroundMask = 1.0 - foreground;
 
     vec2 dyeUv = vec2(vUv.x, 1.0 - vUv.y);
     float dye = length(texture2D(uDye, dyeUv).rgb);
     float reveal = smoothstep(0.12, 0.52, dye * 1.75);
     reveal = pow(clamp(reveal, 0.0, 1.0), 1.18);
 
-    color.rgb = mix(gray, color.rgb, reveal);
+    color.rgb = mix(color.rgb, lowSat, reveal * backgroundMask);
     gl_FragColor = color;
   }
 `
@@ -155,10 +161,10 @@ const HeroDepthCanvas = forwardRef(function HeroDepthCanvas({ photoUrl, depthUrl
           const speed = Math.min(move * 220, 1)
           const dyeAmount = (0.042 + speed * 0.09) * u.cursorStrength
           fluidSimRef.current.splatCursorTrail(fluidX, fluidY, deltaX, deltaY, dyeAmount, {
-            splatRadius: 0.068,
-            dyeSplatRadius: 0.042,
-            trailSteps: 5,
-            trailLength: 5.5,
+            splatRadius: 0.074,
+            dyeSplatRadius: 0.046,
+            trailSteps: 4,
+            trailLength: 3.8,
           })
         }
         prevFluidCursorRef.current = { x: fluidX, y: fluidY }

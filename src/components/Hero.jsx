@@ -39,6 +39,7 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
   const useTwoLayers = !useDepthMap && Boolean(heroBackgroundImage && heroSubjectImage)
   const heroRef = useRef(null)
   const wrapperRef = useRef(null)
+  const wordOccluderRef = useRef(null)
   const containerRef = useRef(null)
   const depthCanvasRef = useRef(null)
   const signatureOverlayRef = useRef(null)
@@ -290,6 +291,7 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
       const revealSize = 26 + 8 * (1 - progress)
       const fluidEnabled = progress < 0.8
       const signatureWidthVw = imageScale * 104
+      const heroMediaOpacity = 1 - progress * 0.5
 
       const container = containerRef.current
       if (container) {
@@ -303,6 +305,16 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
           container.style.transform = `perspective(1200px) scale(${imageScale}) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`
           container.style.filter = 'saturate(0)'
         }
+        container.style.opacity = String(heroMediaOpacity)
+      }
+
+      if (wordOccluderRef.current) {
+        wordOccluderRef.current.style.transform = `scale(${imageScale})`
+        wordOccluderRef.current.style.opacity = '1'
+      }
+
+      if (wrapperRef.current) {
+        wrapperRef.current.style.setProperty('--hero-image-scale', String(imageScale))
       }
 
       if (colorRevealRef.current) {
@@ -514,6 +526,11 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
     <div ref={wrapperRef} className="hero-wrapper" id="home">
       <section ref={heroRef} className="hero">
         <BackgroundWords />
+        <div
+          ref={wordOccluderRef}
+          className={`hero-word-occluder${useDepthMap ? ' hero-word-occluder--depth' : ''}`}
+          aria-hidden
+        />
         <div
           ref={containerRef}
           className={`hero-image-container${useDepthMap ? ' hero-image-container--depth' : ''}`}
