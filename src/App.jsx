@@ -6,6 +6,7 @@ import Projects from "./components/Projects"
 import Contact from "./components/Contact"
 import Loading from "./components/Loading"
 import { useAnimatedTitle } from "./hooks/useAnimatedTitle"
+import { useHeroExitScrollDampening } from "./hooks/useHeroExitScrollDampening"
 import "./App.css"
 
 import heroPhoto from "./images/hero/photo.jpg"
@@ -15,6 +16,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(true)
 
   useAnimatedTitle(!isLoading)
+  useHeroExitScrollDampening()
 
   useEffect(() => {
     let loaded = 0
@@ -46,7 +48,9 @@ function App() {
       />
       <div className="app-content">
         <About />
-        <Gallery />
+      </div>
+      <Gallery />
+      <div className="app-content">
         <Projects />
         <Contact />
       </div>

@@ -1,52 +1,43 @@
-import { useMemo } from 'react'
 import './BackgroundWords.css'
 
-const BackgroundWords = () => {
-  const words = [
-    'PHOTOGRAPHY', 'Developer', 'COMPOSITION', 'ART', 'CREATIVE',
-    'STORYTELLING', 'EMOTION', 'DEPTH', 'PERSPECTIVE', 'FRAME',
-    'CAPTURE', 'INSPIRE', 'CREATE', 'EXPLORE', 'DISCOVER'
-  ]
+const DEVELOPMENT_WORDS = [
+  'Development',
+  'React',
+  'JavaScript',
+  'TypeScript',
+  'Node.js',
+  'Python',
+  'C++',
+]
 
-  // Duplicate words for seamless scrolling
-  const duplicatedWords = [...words, ...words]
+const PHOTOGRAPHY_WORDS = [
+  'Photography',
+  'Portrait Photography',
+  'Landscape Photography',
+  'Premiere',
+  'Lightroom',
+  'Photoshop',
+]
 
-  // Generate stable font sizes - only calculate once, independent of scroll
-  const wordSizes = useMemo(() => {
-    return duplicatedWords.map(() => Math.random() * 15 + 25)
-  }, [])
+function WordTrack({ words, reverse = false }) {
+  const loop = [...words, ...words]
 
   return (
-    <div className="background-words">
-      <div className="background-words-track">
-        {duplicatedWords.map((word, index) => (
-          <div
-            key={index}
-            className="background-word"
-            style={{
-              fontSize: `${wordSizes[index]}px`
-            }}
-          >
-            {word}
-          </div>
-        ))}
-      </div>
-      <div className="background-words-track background-words-track-reverse">
-        {duplicatedWords.map((word, index) => (
-          <div
-            key={`reverse-${index}`}
-            className="background-word"
-            style={{
-              fontSize: `${wordSizes[index]}px`
-            }}
-          >
-            {word}
-          </div>
-        ))}
-      </div>
+    <div className={`background-words-track${reverse ? ' background-words-track-reverse' : ''}`}>
+      {loop.map((word, index) => (
+        <div key={`${word}-${index}`} className="background-word">
+          {word}
+        </div>
+      ))}
     </div>
   )
 }
 
-export default BackgroundWords
-
+export default function BackgroundWords() {
+  return (
+    <div className="background-words">
+      <WordTrack words={DEVELOPMENT_WORDS} />
+      <WordTrack words={PHOTOGRAPHY_WORDS} reverse />
+    </div>
+  )
+}

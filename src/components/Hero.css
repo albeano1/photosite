@@ -14,7 +14,7 @@
   height: 100vh;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow: visible;
   background: transparent;
   z-index: 1;
 }
@@ -40,6 +40,14 @@
   left: -15%;
 }
 
+.hero-depth-media {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .hero-depth-fallback {
   position: absolute;
   top: 0;
@@ -49,6 +57,8 @@
   object-fit: cover;
   object-position: center center;
   z-index: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .hero-depth-canvas {
@@ -81,6 +91,32 @@
   z-index: 1;
 }
 
+.hero-background-layer--gray .hero-image,
+.hero-image--gray {
+  filter: saturate(0);
+}
+
+.hero-color-reveal {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  --reveal-x: 50%;
+  --reveal-y: 50%;
+  --reveal-size: 28vmin;
+  -webkit-mask-image: radial-gradient(
+    circle var(--reveal-size) at var(--reveal-x) var(--reveal-y),
+    #000 0%,
+    #000 38%,
+    transparent 68%
+  );
+  mask-image: radial-gradient(
+    circle var(--reveal-size) at var(--reveal-x) var(--reveal-y),
+    #000 0%,
+    #000 38%,
+    transparent 68%
+  );
+}
+
 .hero-image {
   width: 100%;
   height: 100%;
@@ -110,20 +146,17 @@
 
 .hero-signature-overlay {
   position: absolute;
-  bottom: 15%;
-  left: 0;
-  right: 0;
-  top: auto;
-  transform: none;
+  inset: 0;
   z-index: 3;
   pointer-events: none;
   transition: opacity 0.2s ease-out;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   overflow: visible;
-  padding: 0 2rem;
+  padding: 0;
   box-sizing: border-box;
+  --signature-width: 52vw;
 }
 
 @keyframes hero-scroll-blink {
@@ -160,17 +193,6 @@
   .hero-image-container {
     min-height: 100%;
     bottom: 0;
-  }
-
-  .hero-signature-overlay {
-    top: 50%;
-    bottom: auto;
-    left: 0;
-    right: 0;
-    transform: translateY(-50%);
-    justify-content: center;
-    align-items: center;
-    padding: 0 5%;
   }
 
   .hero-scroll-indicator {

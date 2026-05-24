@@ -1,27 +1,26 @@
 .signature-container {
   display: flex;
-  justify-content: flex-end;
-  align-items: flex-end;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
   padding: 0;
   background: transparent;
 }
 
 .signature-svg {
-  width: 500px;
-  max-width: min(500px, calc(100vw - 4rem));
+  width: var(--signature-width, 52vw);
+  max-width: none;
   height: auto;
-  filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.7));
 }
 
 @media (max-width: 768px) {
-  .signature-container {
-    justify-content: center;
-  }
-
   .signature-svg {
-    width: min(300px, 78vw);
-    height: auto;
-    max-height: min(32vh, 320px);
+    width: var(--signature-width, 68vw);
   }
 }
 
+@media (min-width: 769px) and (max-height: 700px) {
+  .signature-svg {
+    width: var(--signature-width, 48vw);
+  }
+}

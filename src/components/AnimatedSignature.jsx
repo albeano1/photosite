@@ -7,7 +7,7 @@ const VIEW_BOX = '0 0 1421.7 1489.66'
 const SVG_WIDTH = 1000
 const SVG_HEIGHT = 1048
 
-// Delay: signature starts drawing only after this much scroll progress (0–1). Higher = more desaturation first.
+// Signature starts drawing after this scroll progress (0–1).
 const START_DELAY = 0.56
 
 // Artificial stroke weight (in viewBox units). Original SVG used 19px; bump for more presence.

@@ -42,3 +42,10 @@ export const imageCategories = {
 export function getImageCategory(filename) {
   return imageCategories[filename] ?? null
 }
+
+export function getCategoryLabel(filename) {
+  const categoryId = getImageCategory(filename)
+  if (!categoryId) return null
+  const filter = GALLERY_FILTERS.find((f) => f.id === categoryId)
+  return filter?.label ?? null
+}

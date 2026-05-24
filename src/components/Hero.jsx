@@ -4,11 +4,47 @@ import BackgroundWords from './BackgroundWords'
 import HeroDepthCanvas from './HeroDepthCanvas'
 import './Hero.css'
 
+const getLenis = () => window.lenis
+
+const lockPageAtTop = () => {
+  window.scrollTo(0, 0)
+  const lenis = getLenis()
+  lenis?.scrollTo(0, { immediate: true })
+  lenis?.stop()
+  document.body.style.position = 'fixed'
+  document.body.style.top = '0px'
+  document.body.style.left = '0'
+  document.body.style.right = '0'
+  document.body.style.width = '100%'
+  document.body.style.overflow = 'hidden'
+  document.documentElement.style.overflow = 'hidden'
+}
+
+const unlockPage = () => {
+  document.body.style.position = ''
+  document.body.style.top = ''
+  document.body.style.left = ''
+  document.body.style.right = ''
+  document.body.style.width = ''
+  document.body.style.overflow = ''
+  document.documentElement.style.overflow = ''
+  const lenis = getLenis()
+  lenis?.start()
+  window.scrollTo(0, 0)
+  lenis?.scrollTo(0, { immediate: true })
+}
+
 const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage }) => {
   const useDepthMap = Boolean(heroImage && depthMapImage)
   const useTwoLayers = !useDepthMap && Boolean(heroBackgroundImage && heroSubjectImage)
   const heroRef = useRef(null)
   const wrapperRef = useRef(null)
+  const containerRef = useRef(null)
+  const depthCanvasRef = useRef(null)
+  const signatureOverlayRef = useRef(null)
+  const indicatorRef = useRef(null)
+  const progressUiRef = useRef(0)
+  const lastProgressUiSyncRef = useRef(0)
   // Detect touch device first
   const isTouchDevice = useRef('ontouchstart' in window || navigator.maxTouchPoints > 0)
   
@@ -33,7 +69,9 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
   const driftStartTime = useRef(typeof performance !== 'undefined' ? performance.now() : 0)
   const heroBackgroundRef = useRef(null)
   const heroSubjectRef = useRef(null)
-  const [mouseTilt, setMouseTilt] = useState({ x: 0, y: 0 })
+  const colorRevealRef = useRef(null)
+  const cursorScreenRef = useRef({ x: 0.5, y: 0.5 })
+  const smoothCursorScreenRef = useRef({ x: 0.5, y: 0.5 })
 
   // Smooth interpolation
   const lerp = (start, end, factor) => {
@@ -82,8 +120,9 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
       
       if (scrollingUp && isHeroCentered && hasScrolledPast.current) {
         e.preventDefault()
+        savedScrollY.current = 0
         isLockedRef.current = true
-        window.scrollTo({ top: 0, behavior: 'auto' })
+        lockPageAtTop()
 
         // Map scroll position to progress - hero is centered, so map directly
         // When scrollY is 0, progress is 0 (fullscreen)
@@ -104,22 +143,14 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
       }
     }
 
-    const handleScroll = () => {
-      if (isLockedRef.current && window.scrollY > 0) {
-        window.scrollTo({ top: 0, behavior: 'auto' })
-      }
-    }
-
     if (!isTouchDevice.current) {
-      window.addEventListener('wheel', handleWheel, { passive: false })
+      window.addEventListener('wheel', handleWheel, { passive: false, capture: true })
     }
-    window.addEventListener('scroll', handleScroll, { passive: true })
 
     return () => {
       if (!isTouchDevice.current) {
-        window.removeEventListener('wheel', handleWheel)
+        window.removeEventListener('wheel', handleWheel, { capture: true })
       }
-      window.removeEventListener('scroll', handleScroll)
     }
   }, [isScrollLocked])
 
@@ -160,20 +191,18 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
     }
   }, [])
 
-  // Sync scroll lock state with DOM; preserve scroll position to avoid snap/jump
+  // Pin viewport to top while hero drives the animation (Lenis alone cannot hold scroll at 0)
   useEffect(() => {
     if (isScrollLocked) {
-      savedScrollY.current = window.scrollY || window.pageYOffset
-      document.body.style.top = `-${savedScrollY.current}px`
-      document.body.style.overflow = 'hidden'
-      document.documentElement.style.overflow = 'hidden'
-      document.body.style.position = 'fixed'
-      document.body.style.width = '100%'
-      document.body.style.left = '0'
-      document.body.style.right = '0'
+      savedScrollY.current = 0
       isLockedRef.current = true
+      lockPageAtTop()
     } else {
-      const restore = savedScrollY.current
+      isLockedRef.current = false
+      unlockPage()
+    }
+
+    return () => {
       document.body.style.position = ''
       document.body.style.top = ''
       document.body.style.left = ''
@@ -181,14 +210,10 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
       document.body.style.width = ''
       document.body.style.overflow = ''
       document.documentElement.style.overflow = ''
-      isLockedRef.current = false
-      requestAnimationFrame(() => {
-        window.scrollTo(0, restore)
-      })
     }
   }, [isScrollLocked])
 
-  // Smooth progress: lerp only, no snap threshold (avoids visible jump)
+  // Smooth progress: lerp + direct DOM updates (avoid React re-render every frame)
   useEffect(() => {
     const updateProgress = () => {
       const target = Math.max(0, Math.min(1, targetProgress.current))
@@ -201,7 +226,10 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
       } else {
         currentProgress.current = Math.max(0, Math.min(1, cur + diff * factor))
       }
-      setAnimationProgress(currentProgress.current)
+
+      const progress = currentProgress.current
+      const imageScale = Math.max(0.36, 1 - progress * 0.64)
+      const tiltStrength = Math.max(0, 1 - progress)
 
       const now = typeof performance !== 'undefined' ? performance.now() : Date.now()
       const timeSinceMove = lastMouseMoveTime.current < 0 ? 1e9 : now - lastMouseMoveTime.current
@@ -228,20 +256,93 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
       const mouseFactor = cursorInfluence > 0.5 ? 0.05 : 0.22
       currentMouse.current.x = lerp(currentMouse.current.x, targetMouse.current.x, mouseFactor)
       currentMouse.current.y = lerp(currentMouse.current.y, targetMouse.current.y, mouseFactor)
-      setMouseTilt({ x: currentMouse.current.x, y: currentMouse.current.y })
 
       const mx = currentMouse.current.x
       const my = currentMouse.current.y
-      const tiltStr = Math.max(0, 1 - currentProgress.current)
+      const driftUvX = mx * 0.5 + 0.5
+      const driftUvY = my * 0.5 + 0.5
+      const targetCursorX =
+        driftUvX + (cursorScreenRef.current.x - driftUvX) * cursorInfluence
+      const targetCursorY =
+        driftUvY + (cursorScreenRef.current.y - driftUvY) * cursorInfluence
+      smoothCursorScreenRef.current.x = lerp(
+        smoothCursorScreenRef.current.x,
+        targetCursorX,
+        0.22
+      )
+      smoothCursorScreenRef.current.y = lerp(
+        smoothCursorScreenRef.current.y,
+        targetCursorY,
+        0.22
+      )
+      const cursorUvX = smoothCursorScreenRef.current.x
+      const cursorUvY = smoothCursorScreenRef.current.y
+      const cursorStrength = isTouchDevice.current
+        ? 0.35
+        : lastMouseMoveTime.current < 0
+          ? 0.4
+          : 1
+      const tiltX = my * -4 * tiltStrength
+      const tiltY = mx * 4 * tiltStrength
       const layerScale = 1.08
+      const revealX = cursorUvX * 100
+      const revealY = cursorUvY * 100
+      const revealSize = 26 + 8 * (1 - progress)
+      const fluidEnabled = progress < 0.8
+      const signatureWidthVw = imageScale * 104
+
+      const container = containerRef.current
+      if (container) {
+        if (useTwoLayers) {
+          container.style.transform = `perspective(1200px) scale(${imageScale})`
+          container.style.filter = ''
+        } else if (useDepthMap) {
+          container.style.transform = `perspective(1200px) scale(${imageScale})`
+          container.style.filter = 'none'
+        } else {
+          container.style.transform = `perspective(1200px) scale(${imageScale}) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`
+          container.style.filter = 'saturate(0)'
+        }
+      }
+
+      if (colorRevealRef.current) {
+        colorRevealRef.current.style.setProperty('--reveal-x', `${revealX}%`)
+        colorRevealRef.current.style.setProperty('--reveal-y', `${revealY}%`)
+        colorRevealRef.current.style.setProperty('--reveal-size', `${revealSize}vmin`)
+      }
+
+      depthCanvasRef.current?.setVisualState({
+        parallaxX: mx,
+        parallaxY: my,
+        scale: imageScale,
+        cursorX: cursorUvX,
+        cursorY: cursorUvY,
+        cursorStrength,
+        shrinkProgress: progress,
+        fluidEnabled,
+      })
+
+      if (signatureOverlayRef.current) {
+        signatureOverlayRef.current.style.opacity = progress >= 0.56 ? '1' : '0'
+        signatureOverlayRef.current.style.transform = 'none'
+        signatureOverlayRef.current.style.setProperty('--signature-width', `${signatureWidthVw}vw`)
+      }
+
       if (heroBackgroundRef.current) {
-        const pm = 14 * tiltStr
+        const pm = 14 * tiltStrength
         heroBackgroundRef.current.style.transform = `scale(${layerScale}) translate(${-mx * pm}px, ${-my * pm}px)`
       }
       if (heroSubjectRef.current) {
-        const tx = my * -4 * tiltStr
-        const ty = mx * 4 * tiltStr
-        heroSubjectRef.current.style.transform = `scale(${layerScale}) rotateX(${tx}deg) rotateY(${ty}deg)`
+        heroSubjectRef.current.style.transform = `scale(${layerScale}) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`
+      }
+
+      if (
+        now - lastProgressUiSyncRef.current > 48 ||
+        Math.abs(progress - progressUiRef.current) > 0.02
+      ) {
+        lastProgressUiSyncRef.current = now
+        progressUiRef.current = progress
+        setAnimationProgress(progress)
       }
 
       rafId.current = requestAnimationFrame(updateProgress)
@@ -250,7 +351,7 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
     return () => {
       if (rafId.current) cancelAnimationFrame(rafId.current)
     }
-  }, [])
+  }, [useDepthMap, useTwoLayers])
 
   // Unlock when target reaches end; don't set current=1 so lerp finishes smoothly (no snap)
   useEffect(() => {
@@ -277,6 +378,18 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
       const moved = !isFirst && Math.sqrt(dx * dx + dy * dy) >= MOVE_THRESHOLD_PX
       lastClientX.current = clientX
       lastClientY.current = clientY
+
+      const screenTarget = containerRef.current || el
+      if (screenTarget) {
+        const screenRect = screenTarget.getBoundingClientRect()
+        if (screenRect.width > 0 && screenRect.height > 0) {
+          cursorScreenRef.current = {
+            x: Math.max(0, Math.min(1, (clientX - screenRect.left) / screenRect.width)),
+            y: Math.max(0, Math.min(1, (clientY - screenRect.top) / screenRect.height)),
+          }
+        }
+      }
+
       const rect = el.getBoundingClientRect()
       const x = (clientX - rect.left - rect.width / 2) / (rect.width / 2)
       const y = (clientY - rect.top - rect.height / 2) / (rect.height / 2)
@@ -354,7 +467,9 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
         setSignatureComplete(false)
         hasScrolledPast.current = false
         if (scrollY > 0) {
-          window.scrollTo({ top: 0, behavior: 'auto' })
+          const lenis = getLenis()
+          if (lenis) lenis.scrollTo(0, { immediate: true })
+          else window.scrollTo({ top: 0, behavior: 'auto' })
         }
         return
       }
@@ -392,35 +507,19 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
     }
   }, [animationProgress])
 
-  const imageScale = Math.max(0.5, 1 - (animationProgress * 0.5))
-  const imageSaturation = Math.max(0, 1 - animationProgress)
   const signatureOpacity = animationProgress >= 0.56 ? 1 : 0
-  const indicatorOpacity = Math.max(0, 1 - (scrollY / 200))
-  const tiltStrength = Math.max(0, 1 - animationProgress)
-  const tiltX = mouseTilt.y * -4 * tiltStrength
-  const tiltY = mouseTilt.x * 4 * tiltStrength
-  const parallaxMove = 14 * tiltStrength
-  const bgTranslateX = -mouseTilt.x * parallaxMove
-  const bgTranslateY = -mouseTilt.y * parallaxMove
-  const layerScale = 1.08
-
-  const containerTransform = useTwoLayers
-    ? `perspective(1200px) scale(${imageScale})`
-    : `perspective(1200px) scale(${imageScale}) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`
+  const indicatorOpacity = Math.max(0, 1 - scrollY / 200)
 
   return (
     <div ref={wrapperRef} className="hero-wrapper" id="home">
       <section ref={heroRef} className="hero">
         <BackgroundWords />
-        <div 
+        <div
+          ref={containerRef}
           className={`hero-image-container${useDepthMap ? ' hero-image-container--depth' : ''}`}
-          style={{
-            transform: containerTransform,
-            filter: useDepthMap ? 'none' : `saturate(${imageSaturation})`,
-          }}
         >
           {useDepthMap ? (
-            <>
+            <div className="hero-depth-media">
               <img
                 src={heroImage}
                 alt=""
@@ -431,19 +530,16 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
                 aria-hidden
               />
               <HeroDepthCanvas
+                ref={depthCanvasRef}
                 photoUrl={heroImage}
                 depthUrl={depthMapImage}
-                parallaxX={mouseTilt.x}
-                parallaxY={mouseTilt.y}
-                saturation={imageSaturation}
-                scale={imageScale}
               />
-            </>
+            </div>
           ) : useTwoLayers ? (
             <>
               <div
                 ref={heroBackgroundRef}
-                className="hero-background-layer"
+                className="hero-background-layer hero-background-layer--gray"
                 style={{ transform: 'scale(1.08) translate(0px, 0px)' }}
               >
                 <img
@@ -463,6 +559,39 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
               >
                 <img
                   src={heroSubjectImage}
+                  alt=""
+                  className="hero-image hero-image--gray"
+                  fetchPriority="high"
+                  decoding="async"
+                  loading="eager"
+                  aria-hidden
+                />
+                <div ref={colorRevealRef} className="hero-color-reveal">
+                  <img
+                    src={heroSubjectImage}
+                    alt="Hero"
+                    className="hero-image"
+                    fetchPriority="high"
+                    decoding="async"
+                    loading="eager"
+                  />
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <img
+                src={heroImage || 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=2000'}
+                alt=""
+                className="hero-image hero-image--gray"
+                fetchPriority="high"
+                decoding="async"
+                loading="eager"
+                aria-hidden
+              />
+              <div ref={colorRevealRef} className="hero-color-reveal">
+                <img
+                  src={heroImage || 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=2000'}
                   alt="Hero"
                   className="hero-image"
                   fetchPriority="high"
@@ -471,33 +600,24 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
                 />
               </div>
             </>
-          ) : (
-            <img 
-              src={heroImage || 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=2000'} 
-              alt="Hero" 
-              className="hero-image"
-              fetchPriority="high"
-              decoding="async"
-              loading="eager"
-            />
           )}
-          <div 
-            className="hero-signature-overlay"
-            style={{
-              opacity: signatureOpacity,
-            }}
-          >
-            <AnimatedSignature 
-              progress={animationProgress}
-              onAnimationComplete={() => {
-                if (animationProgress >= 1) {
-                  setSignatureComplete(true)
-                }
-              }}
-            />
-          </div>
         </div>
-        <div 
+        <div
+          ref={signatureOverlayRef}
+          className="hero-signature-overlay"
+          style={{ opacity: signatureOpacity }}
+        >
+          <AnimatedSignature
+            progress={animationProgress}
+            onAnimationComplete={() => {
+              if (animationProgress >= 1) {
+                setSignatureComplete(true)
+              }
+            }}
+          />
+        </div>
+        <div
+          ref={indicatorRef}
           className="hero-scroll-indicator"
           style={{ opacity: indicatorOpacity }}
         >
