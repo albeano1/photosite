@@ -1,7 +1,9 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
 
-const HINT_START_VH_RATIO = 0.48
-const HINT_MAX_PROGRESS = 0.085
+/** When zone top is within this many viewports of the pin line, gallery scroll begins */
+const EARLY_START_VH_RATIO = 1.45
+/** Horizontal progress completed during vertical approach (before sticky pin) */
+const APPROACH_MAX_PROGRESS = 0.32
 const OUT_OF_VIEW_MARGIN = 120
 /** Only soften wheel input during gallery approach — not during pinned horizontal scroll */
 const GALLERY_APPROACH_WHEEL_DAMPING = 0.88
@@ -146,7 +148,7 @@ export function useGalleryHorizontalScroll(imageCount) {
   )
 
   const isInGalleryZone = useCallback((zoneRect, vh) => {
-    return zoneRect.top < vh * HINT_START_VH_RATIO && zoneRect.bottom > 0
+    return zoneRect.top < vh * EARLY_START_VH_RATIO && zoneRect.bottom > -vh * 0.25
   }, [])
 
   const syncProgressFromScroll = useCallback(() => {
@@ -176,9 +178,9 @@ export function useGalleryHorizontalScroll(imageCount) {
       setIsApproaching(inZone)
     }
 
-    const hintStart = vh * HINT_START_VH_RATIO
+    const earlyStart = vh * EARLY_START_VH_RATIO
     const shouldRevealTitle =
-      inZone && zoneRect.top <= hintStart && zoneRect.bottom > vh * 0.2
+      inZone && zoneRect.top < vh * 1.15 && zoneRect.top > vh * 0.05
     if (shouldRevealTitle && !titleRevealRef.current) {
       titleRevealRef.current = true
       setTitleReveal(true)
@@ -190,7 +192,7 @@ export function useGalleryHorizontalScroll(imageCount) {
     }
 
     if (
-      zoneRect.top <= 0 &&
+      zoneRect.top < vh * 0.92 &&
       max > 0 &&
       imagesReadyRef.current &&
       !runwayLockedRef.current
@@ -203,13 +205,13 @@ export function useGalleryHorizontalScroll(imageCount) {
     let p = 0
 
     if (zoneRect.top > 0) {
-      if (zoneRect.top < hintStart) {
-        const hintT = 1 - zoneRect.top / hintStart
-        p = hintT * HINT_MAX_PROGRESS
+      if (zoneRect.top < earlyStart) {
+        const approachT = 1 - zoneRect.top / earlyStart
+        p = approachT * APPROACH_MAX_PROGRESS
       }
     } else if (max > 0) {
       const mainT = Math.min(1, stickyOffset / Math.max(1, max))
-      p = HINT_MAX_PROGRESS + mainT * (1 - HINT_MAX_PROGRESS)
+      p = APPROACH_MAX_PROGRESS + mainT * (1 - APPROACH_MAX_PROGRESS)
     }
 
     p = Math.max(0, Math.min(1, p))
@@ -247,7 +249,7 @@ export function useGalleryHorizontalScroll(imageCount) {
       if (zone) {
         const vh = window.innerHeight
         const zoneRect = zone.getBoundingClientRect()
-        const inApproach = zoneRect.top > 0 && isInGalleryZone(zoneRect, vh)
+        const inApproach = zoneRect.top > 0 && zoneRect.top < vh * EARLY_START_VH_RATIO
         if (inApproach) {
           const type = data.event?.type ?? ''
           if (type.includes('wheel')) {
@@ -307,7 +309,7 @@ export function useGalleryHorizontalScroll(imageCount) {
         return
       }
 
-      const margin = `${Math.round(window.innerHeight)}px 0px`
+      const margin = `${Math.round(window.innerHeight * 1.5)}px 0px`
       observer = new IntersectionObserver(
         ([entry]) => {
           isNearZoneRef.current = entry.isIntersecting

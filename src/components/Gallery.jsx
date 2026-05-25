@@ -35,17 +35,21 @@ const seededUnit = (seed, index) => {
 
 const buildItemLayout = (index) => {
   const next = seededUnit(LAYOUT_SEED, index)
+  const heightVh = 28 + Math.floor(next() * 10)
+  const maxWidthVw = 32 + next() * 14
   return {
-    marginRight: `${(4 + next() * 5).toFixed(2)}rem`,
+    marginRight: `${(2 + next() * 3.5).toFixed(2)}rem`,
+    imgHeight: `${heightVh}vh`,
+    imgMaxWidth: `${maxWidthVw.toFixed(1)}vw`,
   }
 }
 
 const buildRowOffsets = () => {
   const next = seededUnit(LAYOUT_SEED, 9999)
   return {
-    row0Pad: `${(6 + next() * 8).toFixed(2)}rem`,
-    row1Pad: `${(14 + next() * 12).toFixed(2)}rem`,
-    rowGap: `${(4 + next() * 3).toFixed(2)}rem`,
+    row0Pad: `${(4 + next() * 6).toFixed(2)}rem`,
+    row1Pad: `${(8 + next() * 10).toFixed(2)}rem`,
+    rowGap: `${(1.5 + next() * 2).toFixed(2)}rem`,
   }
 }
 
@@ -111,27 +115,27 @@ const Gallery = () => {
         ref={zoneRef}
         className={`gallery-scroll-zone${reducedMotion ? ' gallery-scroll-zone--static' : ''}`}
       >
+        <header className="gallery-intro">
+          <h2
+            className={[
+              'gallery-title',
+              titleActive ? 'gallery-title--revealed' : '',
+              titleSettled ? 'gallery-title--settled' : '',
+              reducedMotion ? 'gallery-title--reduced-motion' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            onAnimationEnd={handleTitleAnimationEnd}
+          >
+            <span className="gallery-title__text">Photography</span>
+          </h2>
+        </header>
+
         <section id="gallery" className={sectionClass} ref={containerRef}>
           <div
             className={`gallery-hscroll-pin${reducedMotion ? ' gallery-hscroll-pin--static' : ''}`}
           >
           <div className="gallery-enter">
-            <header className="gallery-header">
-              <h2
-                className={[
-                  'gallery-title',
-                  titleActive ? 'gallery-title--revealed' : '',
-                  titleSettled ? 'gallery-title--settled' : '',
-                  reducedMotion ? 'gallery-title--reduced-motion' : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-                onAnimationEnd={handleTitleAnimationEnd}
-              >
-                <span className="gallery-title__text">Photography</span>
-              </h2>
-            </header>
-
             <div className="gallery-hscroll-stage">
               <div ref={trackRef} className="gallery-hscroll-track">
                 {imageRows.map((row, rowIndex) => (
@@ -150,7 +154,11 @@ const Gallery = () => {
                           key={image.id}
                           className="gallery-hscroll-item"
                           data-gallery-index={index}
-                          style={{ marginRight: layout.marginRight }}
+                          style={{
+                            marginRight: layout.marginRight,
+                            '--img-height': layout.imgHeight,
+                            '--img-max-width': layout.imgMaxWidth,
+                          }}
                         >
                           {image.label ? (
                             <span className="gallery-hscroll-item-label">{image.label}</span>
