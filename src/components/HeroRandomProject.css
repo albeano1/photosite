@@ -1,0 +1,240 @@
+.hero-random-project-btn {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 0.5rem;
+  z-index: 10;
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  overflow: visible;
+}
+
+.hero-random-project-fade {
+  padding: 1.15rem 1.35rem 0.65rem 0.65rem;
+  overflow: visible;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+.hero-random-project-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.hero-random-project-label {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.5rem;
+  font-weight: 500;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.78);
+  text-align: left;
+  line-height: 1;
+  margin: 0;
+  padding: 0 0 1.5rem 0.15rem;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
+  animation: none;
+  transition: none;
+  transform: none;
+}
+
+.hero-random-project-scene {
+  --card-w: 6.375rem;
+  --card-h: 8.25rem;
+  width: var(--card-w);
+  height: var(--card-h);
+  perspective: 720px;
+  perspective-origin: 50% 50%;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.35s ease;
+  transform-origin: center center;
+}
+
+.hero-random-project-btn:hover .hero-random-project-scene {
+  transform: scale(1.06);
+}
+
+.hero-random-project-card-3d {
+  position: relative;
+  width: var(--card-w);
+  height: var(--card-h);
+  transform-style: preserve-3d;
+  transform-origin: center center;
+  animation: hero-random-card-spin 4s linear infinite;
+}
+
+.hero-random-project-card-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0.65rem 0.7rem 0.6rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.72);
+  border-radius: 18px;
+  background: transparent;
+  backface-visibility: hidden;
+  box-sizing: border-box;
+  overflow: hidden;
+  contain: paint;
+}
+
+.hero-random-project-card-face--back {
+  transform: rotateY(180deg);
+}
+
+.hero-random-project-card-title {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1.22;
+  color: #ffffff;
+  flex: 0 0 auto;
+  width: 100%;
+  margin: 0 0 0.3rem;
+  padding: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.hero-random-project-card-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  margin-bottom: 0.4rem;
+  justify-content: flex-start;
+}
+
+.hero-random-project-card-line {
+  display: block;
+  height: 0;
+  border-top: 1.5px solid rgba(255, 255, 255, 0.4);
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.hero-random-project-card-line--w90 {
+  width: 90%;
+}
+
+.hero-random-project-card-line--w75 {
+  width: 75%;
+}
+
+.hero-random-project-card-line--w60 {
+  width: 60%;
+}
+
+.hero-random-project-card-line--w45 {
+  width: 45%;
+}
+
+.hero-random-project-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.24rem;
+  margin-top: auto;
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+  align-content: flex-start;
+}
+
+.hero-random-project-card-tags--single .hero-random-project-card-tag {
+  flex: 1 1 100%;
+  min-width: 100%;
+  max-width: 100%;
+}
+
+.hero-random-project-card-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  flex: 1 1 calc(50% - 0.12rem);
+  min-width: calc(50% - 0.12rem);
+  max-width: calc(50% - 0.12rem);
+  font-size: 0.48rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.9);
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  border-radius: 5px;
+  padding: 0.14rem 0.2rem;
+  line-height: 1.1;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.hero-random-project-btn:hover .hero-random-project-card-face {
+  border-color: rgba(255, 255, 255, 0.92);
+}
+
+.hero-random-project-btn:focus-visible {
+  outline: none;
+}
+
+.hero-random-project-btn:focus-visible .hero-random-project-scene {
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 9px;
+  border-radius: 21px;
+}
+
+@keyframes hero-random-card-spin {
+  from {
+    transform: rotateX(10deg) rotateY(0deg);
+  }
+  to {
+    transform: rotateX(10deg) rotateY(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-random-project-btn {
+    bottom: 0.4rem;
+    left: 0.4rem;
+  }
+
+  .hero-random-project-fade {
+    padding: 1rem 1.15rem 0.55rem 0.55rem;
+  }
+
+  .hero-random-project-scene {
+    --card-w: 5.625rem;
+    --card-h: 7.275rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-random-project-scene {
+    transition: none;
+  }
+
+  .hero-random-project-btn:hover .hero-random-project-scene {
+    transform: none;
+  }
+
+  .hero-random-project-card-3d {
+    animation: none;
+    transform: rotateX(10deg) rotateY(-22deg);
+  }
+}

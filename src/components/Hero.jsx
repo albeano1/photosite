@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import AnimatedSignature from './AnimatedSignature'
 import BackgroundWords from './BackgroundWords'
 import HeroDepthCanvas from './HeroDepthCanvas'
+import HeroRandomProject from './HeroRandomProject'
 import './Hero.css'
 
 const getLenis = () => window.lenis
@@ -448,7 +449,7 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
     }
   }, [])
 
-  // Handle scroll-based animation for touch devices (both directions)
+  // Handle scroll-based animation for touch devices (both directions)    
   useEffect(() => {
     if (isScrollLocked && !isTouchDevice.current) return // Skip on desktop when locked (wheel handler handles it)
 
@@ -520,7 +521,16 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
   }, [animationProgress])
 
   const signatureOpacity = animationProgress >= 0.56 ? 1 : 0
-  const indicatorOpacity = Math.max(0, 1 - scrollY / 200)
+  const heroChromeFade = Math.min(1, scrollY / 200)
+  const indicatorOpacity = Math.max(0, 1 - heroChromeFade)
+  // Fade completes when hero scale reaches this ratio (lower = slower / more scroll)
+  const heroFadeAtScale = 0.84
+  const heroFadeCompleteProgress = (1 - heroFadeAtScale) / 0.64
+  const randomProjectFade = Math.min(
+    1,
+    animationProgress / heroFadeCompleteProgress
+  )
+  const randomProjectFadeEdge = `${randomProjectFade * 100}%`
 
   return (
     <div ref={wrapperRef} className="hero-wrapper" id="home">
@@ -633,6 +643,7 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
             }}
           />
         </div>
+        <HeroRandomProject fade={randomProjectFade} fadeEdge={randomProjectFadeEdge} />
         <div
           ref={indicatorRef}
           className="hero-scroll-indicator"
