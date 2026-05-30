@@ -1,7 +1,7 @@
 .contact-blanket-zone {
   position: relative;
   /* Scroll runway after Projects — the blanket only engages once this is scrolled through. */
-  height: var(--contact-blanket-runway, 8vh);
+  height: var(--contact-blanket-runway, 16vh);
 }
 
 .contact-blanket-panel {
@@ -58,7 +58,7 @@
 
 @media (max-width: 768px) {
   .contact-blanket-zone {
-    height: var(--contact-blanket-runway, 8svh);
+    height: var(--contact-blanket-runway, 16svh);
   }
 
   .contact-blanket-panel {
