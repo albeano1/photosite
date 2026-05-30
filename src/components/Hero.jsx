@@ -7,7 +7,12 @@ import './Hero.css'
 
 const getLenis = () => window.lenis
 
+const isContactBlanketActive = () =>
+  document.body.dataset.contactBlanket === 'active'
+
 const lockPageAtTop = () => {
+  if (isContactBlanketActive()) return
+
   window.scrollTo(0, 0)
   const lenis = getLenis()
   lenis?.scrollTo(0, { immediate: true })
@@ -87,6 +92,8 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
     isLockedRef.current = isScrollLocked
 
     const handleWheel = (e) => {
+      if (isContactBlanketActive()) return
+
       const scrollY = window.scrollY || window.pageYOffset
       const windowHeight = window.innerHeight
       const scrollingUp = e.deltaY < 0
@@ -456,6 +463,8 @@ const Hero = ({ heroImage, heroBackgroundImage, heroSubjectImage, depthMapImage 
     let lastScrollY = window.scrollY || window.pageYOffset
 
     const handleScroll = () => {
+      if (isContactBlanketActive()) return
+
       const scrollY = window.scrollY || window.pageYOffset
       const windowHeight = window.innerHeight
       const scrollingUp = scrollY < lastScrollY

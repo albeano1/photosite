@@ -3,7 +3,7 @@ import Hero from "./components/Hero"
 import About from "./components/About"
 import Gallery from "./components/Gallery"
 import Projects from "./components/Projects"
-import Contact from "./components/Contact"
+import ContactBlanket from "./components/ContactBlanket"
 import Loading from "./components/Loading"
 import { useAnimatedTitle } from "./hooks/useAnimatedTitle"
 import { useHeroExitScrollDampening } from "./hooks/useHeroExitScrollDampening"
@@ -50,9 +50,9 @@ function App() {
         <About />
       </div>
       <Gallery />
-      <div className="app-content">
+      <div className="app-content app-content--tail">
         <Projects />
-        <Contact />
+        <ContactBlanket />
       </div>
     </div>
   )

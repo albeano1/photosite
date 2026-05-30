@@ -1,17 +1,14 @@
 import { motion } from 'framer-motion'
 import './Contact.css'
 
-const Contact = () => {
-  return (
-    <section id="contact" className="contact-section">
-      <div className="contact-container">
-        <motion.div
-          className="contact-content"
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8, ease: [0.6, -0.05, 0.01, 0.99] }}
-        >
+const Contact = ({ variant = 'default' }) => {
+  const sectionClass =
+    variant === 'blanket'
+      ? 'contact-section contact-section--blanket'
+      : 'contact-section'
+
+  const content = (
+    <>
           <h2 className="contact-title">Contact</h2>
           <p className="contact-description">
             Interested in collaborating or have a project in mind?
@@ -61,7 +58,25 @@ const Contact = () => {
               <span>Instagram</span>
             </motion.a>
           </div>
-        </motion.div>
+    </>
+  )
+
+  return (
+    <section id="contact" className={sectionClass}>
+      <div className="contact-container">
+        {variant === 'blanket' ? (
+          <div className="contact-content">{content}</div>
+        ) : (
+          <motion.div
+            className="contact-content"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.8, ease: [0.6, -0.05, 0.01, 0.99] }}
+          >
+            {content}
+          </motion.div>
+        )}
       </div>
     </section>
   )

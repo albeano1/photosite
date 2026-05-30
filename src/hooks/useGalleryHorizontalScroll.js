@@ -1,4 +1,8 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
+import {
+  isContactBlanketScrollActive,
+  registerLenisVirtualScrollHandler,
+} from '../utils/lenisVirtualScrollChain'
 
 /** When zone top is within this many viewports of the pin line, gallery scroll begins */
 const EARLY_START_VH_RATIO = 1.45
@@ -239,38 +243,31 @@ export function useGalleryHorizontalScroll(imageCount) {
   }, [])
 
   useEffect(() => {
-    const lenis = window.lenis
-    if (!lenis || reducedMotion) return
+    if (reducedMotion) return
 
-    const previousVirtualScroll = lenis.options.virtualScroll
-
-    lenis.options.virtualScroll = (data) => {
-      const zone = zoneRef.current
-      if (zone) {
+    return registerLenisVirtualScrollHandler({
+      id: 'gallery-approach-dampening',
+      priority: 50,
+      when: () => !isContactBlanketScrollActive(),
+      handler: (data) => {
+        const zone = zoneRef.current
+        if (!zone) return
         const vh = window.innerHeight
         const zoneRect = zone.getBoundingClientRect()
-        const inApproach = zoneRect.top > 0 && zoneRect.top < vh * EARLY_START_VH_RATIO
-        if (inApproach) {
-          const type = data.event?.type ?? ''
-          if (type.includes('wheel')) {
-            data.deltaY *= GALLERY_APPROACH_WHEEL_DAMPING
-            data.deltaX *= GALLERY_APPROACH_WHEEL_DAMPING
-          } else if (type.includes('touch')) {
-            data.deltaY *= GALLERY_APPROACH_TOUCH_DAMPING
-            data.deltaX *= GALLERY_APPROACH_TOUCH_DAMPING
-          }
+        const inApproach =
+          zoneRect.top > 0 && zoneRect.top < vh * EARLY_START_VH_RATIO
+        if (!inApproach) return
+        const type = data.event?.type ?? ''
+        if (type.includes('wheel')) {
+          data.deltaY *= GALLERY_APPROACH_WHEEL_DAMPING
+          data.deltaX *= GALLERY_APPROACH_WHEEL_DAMPING
+        } else if (type.includes('touch')) {
+          data.deltaY *= GALLERY_APPROACH_TOUCH_DAMPING
+          data.deltaX *= GALLERY_APPROACH_TOUCH_DAMPING
         }
-      }
-
-      if (typeof previousVirtualScroll === 'function') {
-        return previousVirtualScroll(data)
-      }
-    }
-
-    return () => {
-      lenis.options.virtualScroll = previousVirtualScroll
-    }
-  }, [reducedMotion, isInGalleryZone])
+      },
+    })
+  }, [reducedMotion])
 
   useEffect(() => {
     if (reducedMotion) return

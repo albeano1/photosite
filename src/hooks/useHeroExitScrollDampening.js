@@ -1,4 +1,8 @@
 import { useEffect } from 'react'
+import {
+  isContactBlanketScrollActive,
+  registerLenisVirtualScrollHandler,
+} from '../utils/lenisVirtualScrollChain'
 
 /** Soft scroll brake just after leaving the hero so the signature finish is readable */
 const HERO_EXIT_WHEEL_DAMPING = 0.62
@@ -29,16 +33,15 @@ function isHeroExitMoment() {
 
 export function useHeroExitScrollDampening() {
   useEffect(() => {
-    const lenis = window.lenis
-    if (!lenis) return
-
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
     if (mq.matches) return
 
-    const previousVirtualScroll = lenis.options.virtualScroll
-
-    lenis.options.virtualScroll = (data) => {
-      if (isHeroExitMoment()) {
+    return registerLenisVirtualScrollHandler({
+      id: 'hero-exit-dampening',
+      priority: 10,
+      when: () => !isContactBlanketScrollActive(),
+      handler: (data) => {
+        if (!isHeroExitMoment()) return
         const type = data.event?.type ?? ''
         const dampening = type.includes('touch')
           ? HERO_EXIT_TOUCH_DAMPING
@@ -47,15 +50,7 @@ export function useHeroExitScrollDampening() {
           data.deltaY *= dampening
           data.deltaX *= dampening
         }
-      }
-
-      if (typeof previousVirtualScroll === 'function') {
-        return previousVirtualScroll(data)
-      }
-    }
-
-    return () => {
-      lenis.options.virtualScroll = previousVirtualScroll
-    }
+      },
+    })
   }, [])
 }

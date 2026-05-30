@@ -1,0 +1,93 @@
+.contact-blanket-zone {
+  position: relative;
+  /* Scroll runway after Projects — the blanket only engages once this is scrolled through. */
+  height: var(--contact-blanket-runway, 8vh);
+}
+
+.contact-blanket-panel {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  min-height: 200vh;
+  background: #0a0a0a;
+  /* start fully below the viewport (progress 0); +2px avoids a subpixel seam
+     at the viewport bottom before the JS takes over on mount */
+  transform: translate3d(0, calc(100vh + 2px), 0);
+  /* will-change is toggled on by JS only while the blanket animates, so we don't
+     keep a 200vh GPU layer promoted permanently. */
+  will-change: auto;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  z-index: 40;
+}
+
+.contact-blanket-image {
+  width: 100%;
+  height: 100vh;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.contact-blanket-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  display: block;
+  transform-origin: center bottom;
+}
+
+.contact-blanket-caption {
+  margin: 0;
+  padding: 1rem 2rem 1.125rem;
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  text-align: center;
+  background: #0a0a0a;
+}
+
+.contact-blanket-panel .contact-section--blanket {
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .contact-blanket-zone {
+    height: var(--contact-blanket-runway, 8svh);
+  }
+
+  .contact-blanket-panel {
+    min-height: 200svh;
+  }
+
+  .contact-blanket-image {
+    height: 100svh;
+  }
+
+  .contact-blanket-caption {
+    padding: 0.875rem 1.5rem 1rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-blanket-zone {
+    height: auto;
+  }
+
+  .contact-blanket-panel {
+    position: static;
+    height: auto;
+    transform: none !important;
+    z-index: auto;
+  }
+
+  .contact-blanket-image {
+    height: 60vh;
+  }
+}
