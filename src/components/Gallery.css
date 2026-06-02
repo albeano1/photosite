@@ -324,6 +324,9 @@
     min-height: 20vh;
     max-height: 32vh;
     max-width: min(var(--img-max-width, 50vw), 70vw);
+    object-fit: contain;
+    object-position: center;
+    background: transparent;
   }
 
   .gallery-hscroll-track {
@@ -352,5 +355,8 @@
     min-height: 18vh;
     max-height: 28vh;
     max-width: min(var(--img-max-width, 58vw), 75vw);
+    object-fit: contain;
+    object-position: center;
+    background: transparent;
   }
 }
