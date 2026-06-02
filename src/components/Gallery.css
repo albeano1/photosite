@@ -312,6 +312,24 @@
 }
 
 @media (max-width: 768px) {
+  .gallery-hscroll-item {
+    gap: 0.14rem;
+  }
+
+  .gallery-hscroll-item-label {
+    padding-left: 0.1rem;
+    padding-top: 0;
+    line-height: 1.1;
+  }
+
+  .gallery-hscroll-item--horizontal {
+    gap: 0;
+  }
+
+  .gallery-hscroll-item--vertical {
+    gap: 0.42rem;
+  }
+
   .gallery-title {
     padding-top: clamp(2rem, 6vh, 3rem);
   }
@@ -327,6 +345,29 @@
     object-fit: contain;
     object-position: center;
     background: transparent;
+  }
+
+  /* Portrait phones: horizontal photos were using a tall fixed box + contain,
+     leaving invisible padding above the visible image (label looked too high). */
+  @media (orientation: portrait) {
+    .gallery-hscroll-item--horizontal {
+      gap: 0.6rem;
+    }
+
+    .gallery-hscroll-item--vertical {
+      gap: 0.85rem;
+    }
+
+    .gallery-hscroll-item--horizontal .gallery-hscroll-item-image {
+      height: auto;
+      min-height: 0;
+      width: auto;
+    }
+
+    .gallery-hscroll-item--horizontal .gallery-hscroll-item-label {
+      margin-bottom: 0;
+      line-height: 1.1;
+    }
   }
 
   .gallery-hscroll-track {

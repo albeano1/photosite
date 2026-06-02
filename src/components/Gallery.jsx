@@ -88,6 +88,9 @@ const Gallery = () => {
     useGalleryHorizontalScroll(images.length)
 
   const [titleSettled, setTitleSettled] = useState(false)
+  const [isMobileViewport, setIsMobileViewport] = useState(
+    typeof window !== 'undefined' ? window.innerWidth <= 768 : false
+  )
   const titleActive = titleReveal || (reducedMotion && isApproaching)
 
   const handleTitleAnimationEnd = useCallback((event) => {
@@ -101,6 +104,76 @@ const Gallery = () => {
       setTitleSettled(true)
     }
   }, [reducedMotion, isApproaching])
+
+  useEffect(() => {
+    const onResize = () => setIsMobileViewport(window.innerWidth <= 768)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  useEffect(() => {
+    const applyRatioClass = (img) => {
+      const item = img.closest('.gallery-hscroll-item')
+      if (!item) return false
+      item.classList.remove('gallery-hscroll-item--vertical', 'gallery-hscroll-item--horizontal')
+      let ratio = null
+      if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+        ratio = img.naturalWidth / img.naturalHeight
+      } else {
+        const rect = img.getBoundingClientRect()
+        if (rect.width > 0 && rect.height > 0) {
+          ratio = rect.width / rect.height
+        }
+      }
+      if (!ratio) return false
+      if (ratio > 1.2) {
+        item.classList.add('gallery-hscroll-item--horizontal')
+      } else if (ratio < 0.85) {
+        item.classList.add('gallery-hscroll-item--vertical')
+      }
+      return true
+    }
+
+    const imgs = Array.from(document.querySelectorAll('.gallery-hscroll-item-image'))
+    const listeners = []
+    let rafId = 0
+    let rafPasses = 0
+    const MAX_RAF_PASSES = 120
+
+    const classifyAll = () =>
+      imgs.reduce((pending, img) => (applyRatioClass(img) ? pending : pending + 1), 0)
+
+    const classifyUntilReady = () => {
+      const pending = classifyAll()
+      if (pending > 0 && rafPasses < MAX_RAF_PASSES) {
+        rafPasses += 1
+        rafId = requestAnimationFrame(classifyUntilReady)
+      }
+    }
+
+    classifyUntilReady()
+
+    imgs.forEach((img) => {
+      if (img.complete && img.naturalWidth > 0) {
+        applyRatioClass(img)
+        return
+      }
+      const onLoad = () => applyRatioClass(img)
+      img.addEventListener('load', onLoad, { once: true })
+      listeners.push([img, onLoad])
+    })
+
+    const onResize = () => classifyAll()
+    window.addEventListener('resize', onResize)
+    window.addEventListener('orientationchange', onResize)
+
+    return () => {
+      listeners.forEach(([img, onLoad]) => img.removeEventListener('load', onLoad))
+      window.removeEventListener('resize', onResize)
+      window.removeEventListener('orientationchange', onResize)
+      if (rafId) cancelAnimationFrame(rafId)
+    }
+  }, [images.length])
 
   const sectionClass = [
     'gallery-section',
@@ -172,7 +245,7 @@ const Gallery = () => {
                                   : `Gallery image ${index + 1}`
                               }
                               className="gallery-hscroll-item-image"
-                              loading={index < 8 ? 'eager' : 'lazy'}
+                              loading={isMobileViewport ? 'eager' : index < 8 ? 'eager' : 'lazy'}
                               decoding="async"
                               fetchPriority={index < 4 ? 'high' : 'low'}
                             />
