@@ -8,11 +8,11 @@ export const projects = [
     image: null,
   },
   {
-    title: 'True Reasoning for LLMS',
+    title: 'Cap 100',
     description:
-      'A project to obtain true reasoning capabilities for LLMs base on propositioanal and formal logic. Providing consistent answers for questions based on the given context.',
-    tech: ['React', 'CSS', 'Python'],
-    link: null,
+      'Production NBA draft game with ranked leaderboards, 1v1 matchmaking, and Monte Carlo season simulation under a 100 PPG cap. Full stack: React SPA, Express APIs, ridge projection models, and Postgres.',
+    tech: ['React', 'Express', 'Postgres'],
+    link: 'https://cap100game.com/',
     image: null,
   },
   {
